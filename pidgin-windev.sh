@@ -14,8 +14,8 @@ if [[ -z "$1" || "$1" = "--help" ]]; then echo "
     http://developer.pidgin.im/wiki/BuildingWinPidgin.
 
     I was designed based on that page, and I will try my best to perform what
-    is described there, but I must say in advance you will need to install
-    Bonjour SDK and Nsisunz NSIS plugin manually. You will be given more
+    is described there, but I must say in advance you will need to manually
+    install GnuPG, Bonjour SDK, and Nsisunz NSIS plugin. You will be given more
     details when I finish.
 
     I was designed to run under MinGW MSYS with mingw-get command available.
@@ -171,8 +171,9 @@ echo
 # Finishing
 
 echo "Finished setting up the build environment, remaining manual steps are:
-1. Install Bonjour SDK under $WIN32/Bonjour_SDK
-2. Install Nsisunz plugin for NSIS under $WIN32/$NSIS/Plugins
-3. Add downloaded GCC, Perl and NSIS before others in your PATH by running
+1. Install GnuPG and make it available from PATH
+2. Install Bonjour SDK under $WIN32/Bonjour_SDK
+3. Install Nsisunz plugin for NSIS under $WIN32/$NSIS/Plugins
+4. Add downloaded GCC, Perl and NSIS before others in your PATH by running
    eval \$($0 $DEVROOT --path)."
 echo
