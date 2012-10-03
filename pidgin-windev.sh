@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PIDGIN_VERSION="2.10.6.next"
+CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" ]]; then echo "
     Pidgin Windows Development Setup 2012.10.1-dev
@@ -25,6 +26,10 @@ if [[ -z "$1" || "$1" = "--help" ]]; then echo "
     finishing the manual steps you should be able to build Pidgin with
     '\$make -f Makefile.mingw installers' or the like.
 
+    NOTE: in order to download Pidgin dependencies without security warnings,
+    place the appropriate CA certificate under the following location:
+    $CA_CERT.
+
     Usage: $0 DEVELOPMENT_ROOT [--pidgin-version VERSION] | --help"
     echo
     exit
@@ -32,7 +37,7 @@ fi
 
 download() {
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
-    wget -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
+    wget --no-check-certificate --ca-certificate "$CA_CERT" -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
 }
 
 
@@ -45,11 +50,11 @@ PERL="ActivePerl-5.12.4.1205"
 MINGW="mingw-gcc-4.4.0"
 NSIS="nsis-2.46"
 
-PIDGIN_BASE_URL="http://developer.pidgin.im/static/win32"
+PIDGIN_BASE_URL="https://developer.pidgin.im/static/win32"
 GNOME_BASE_URL="http://ftp.gnome.org/pub/gnome/binaries/win32"
 MINGW_BASE_URL="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 MINGW_GCC4_URL="$MINGW_BASE_URL/gcc/Version4/Previous%20Release%20gcc-4.4.0"
-MINGW_PACKAGES="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip bsdtar msys-wget"
+MINGW_PACKAGES="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip bsdtar msys-wget msys-libopenssl"
 
 INSTALLING_PACKAGES="Installing some MSYS packages..."
 DOWNLOADING_MINGW="Downloading specific MinGW GCC..."
