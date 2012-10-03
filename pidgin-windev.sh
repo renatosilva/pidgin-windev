@@ -1,10 +1,11 @@
 #!/bin/bash
 
+VERSION="2012.10.1-dev"
 PIDGIN_VERSION="2.10.6.next"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" ]]; then echo "
-    Pidgin Windows Development Setup 2012.10.1-dev
+    Pidgin Windows Development Setup $VERSION
     Copyright 2012 Renato Silva
     GPLv2 licensed
 
