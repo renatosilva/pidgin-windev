@@ -130,6 +130,8 @@ echo
 
 echo "$EXTRACTING_MINGW"
 mkdir -p "$WIN32/$MINGW"
+mkdir -p "$WIN32/gcc-core-4.4.0-mingw32-dll"
+tar -xzf "$CACHE/$MINGW/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$WIN32/gcc-core-4.4.0-mingw32-dll"
 tar  --lzma -xf "$CACHE/$MINGW/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma" --directory "$WIN32/$MINGW"
 for GZIP_TARBALL in "$CACHE/$MINGW/"*".tar.gz"; do
     tar -xzf "$GZIP_TARBALL" --directory "$WIN32/$MINGW"
