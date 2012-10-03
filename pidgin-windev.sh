@@ -48,9 +48,8 @@ download() {
 DEVROOT="$1"
 CACHE="$DEVROOT/downloads"
 WIN32="$DEVROOT/win32-dev"
-PERL_VERSION="5.14.2.1402"
-PERL="ActivePerl-$PERL_VERSION"
-PERL_PACKAGE="$PERL-MSWin32-x86-295342"
+PERL_VERSION="5.10.1.5"
+PERL="strawberry-perl-$PERL_VERSION"
 MINGW="mingw-gcc-4.4.0"
 NSIS="nsis-2.46"
 
@@ -130,7 +129,7 @@ for BUILD_DEEPENDENCY in \
     "$GNOME_BASE_URL/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
     "$GNOME_BASE_URL/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$NSIS.zip/download"                    \
-    "http://downloads.activestate.com/ActivePerl/releases/$PERL_VERSION/$PERL_PACKAGE.zip"           \
+    "http://strawberryperl.com/download/$PERL_VERSION/$PERL.zip"                                     \
 ; do download "$BUILD_DEEPENDENCY" "$CACHE"; done
 echo
 
@@ -158,13 +157,11 @@ unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.1
 unzip -qo  "$CACHE/libxml2_2.9.0-1_win32.zip"             -d "$WIN32/libxml2-2.9.0"
 unzip -qo  "$CACHE/libxml2-dev_2.9.0-1_win32.zip"         -d "$WIN32/libxml2-2.9.0"
 unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
-unzip -qo  "$CACHE/$PERL_PACKAGE.zip"                     -d "$WIN32"
+unzip -qo  "$CACHE/$PERL.zip"                             -d "$WIN32/$PERL"
 unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
 unzip -qo  "$CACHE/$NSIS.zip"                             -d "$WIN32"
 tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
 
-rm -rf "$WIN32/$PERL"
-mv "$WIN32/$PERL_PACKAGE" "$WIN32/$PERL"
 for GZIP_TARBALL in "$CACHE/"*".tar.gz"; do
     bsdtar -xzf "$GZIP_TARBALL" --directory "$WIN32"
 done
