@@ -156,10 +156,10 @@ unzip -qo  "$CACHE/gettext-tools-0.17.zip"                -d "$WIN32/gettext-0.1
 unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.17"
 unzip -qo  "$CACHE/libxml2_2.9.0-1_win32.zip"             -d "$WIN32/libxml2-2.9.0"
 unzip -qo  "$CACHE/libxml2-dev_2.9.0-1_win32.zip"         -d "$WIN32/libxml2-2.9.0"
-unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
 unzip -qo  "$CACHE/$PERL.zip"                             -d "$WIN32/$PERL"
-unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
 unzip -qo  "$CACHE/$NSIS.zip"                             -d "$WIN32"
+unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
+unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
 tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
 
 for GZIP_TARBALL in "$CACHE/"*".tar.gz"; do
