@@ -27,9 +27,10 @@ if [[ -z "$1" || "$1" = "--help" ]]; then echo "
     finishing the manual steps you should be able to build Pidgin with
     '\$make -f Makefile.mingw installers' or the like.
 
-    NOTE: in order to download Pidgin dependencies without security warnings,
+    NOTES: in order to download Pidgin dependencies without security warnings,
     place the appropriate CA certificate under the following location:
-    $CA_CERT.
+    $CA_CERT. Also, if you want to sign
+    the installers, you will need to follow the manual instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--pidgin-version VERSION] | --help"
     echo
@@ -147,6 +148,7 @@ done
 
 echo "$EXTRACTING_PIDGIN"
 tar -xjf "$CACHE/pidgin-$PIDGIN_VERSION.tar.bz2" --directory "$DEVROOT"
+echo "MONO_SIGNCODE=true" > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
 
 echo "$EXTRACTING_DEPENDENCIES"
 unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.40.4-1_win32"
