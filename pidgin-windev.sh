@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PIDGIN_VERSION="2.10.3"
+PIDGIN_VERSION="2.10.6"
 
 if [[ -z "$1" || "$1" = "--help" ]]; then echo "
-    Pidgin Windows Development Setup 2012.10.1-for-2.10.3
+    Pidgin Windows Development Setup 2012.10.1-for-2.10.6
     Copyright 2012 Renato Silva
     GPLv2 licensed
 
@@ -108,6 +108,7 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/tcl-8.4.5.tar.gz"                                                              \
     "$PIDGIN_BASE_URL/perl_5-10-0.tar.gz"                                                            \
     "$PIDGIN_BASE_URL/gtkspell-2.0.16.tar.bz2"                                                       \
+    "$PIDGIN_BASE_URL/enchant_1.6.0_win32.zip"                                                       \
     "$PIDGIN_BASE_URL/silc-toolkit-1.1.8.tar.gz"                                                     \
     "$PIDGIN_BASE_URL/cyrus-sasl-2.1.22-daa1.zip"                                                    \
     "$PIDGIN_BASE_URL/nss-3.12.5-nspr-4.8.2.tar.gz"                                                  \
@@ -115,7 +116,6 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/pidgin-inst-deps-20100315.tar.gz"                                              \
     "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
     "$GNOME_BASE_URL/dependencies/libxml2_2.7.4-1_win32.zip"                                         \
-    "$GNOME_BASE_URL/dependencies/enchant_1.5.0-2_win32.zip"                                         \
     "$GNOME_BASE_URL/dependencies/gettext-runtime-0.17-1.zip"                                        \
     "$GNOME_BASE_URL/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
     "$GNOME_BASE_URL/dependencies/libxml2-dev_2.7.4-1_win32.zip"                                     \
@@ -139,13 +139,13 @@ echo "$EXTRACTING_PIDGIN"
 tar -xjf "$CACHE/pidgin-$PIDGIN_VERSION.tar.bz2" --directory "$DEVROOT"
 
 echo "$EXTRACTING_DEPENDENCIES"
-unzip -qo  "$CACHE/enchant_1.5.0-2_win32.zip"             -d "$WIN32/enchant_1.5.0-2_win32"
 unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.40.4-1_win32"
 unzip -qo  "$CACHE/gtk+-bundle_2.14.7-20090119_win32.zip" -d "$WIN32/gtk_2_0-2.14"
 unzip -qo  "$CACHE/gettext-tools-0.17.zip"                -d "$WIN32/gettext-0.17"
 unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.17"
 unzip -qo  "$CACHE/libxml2_2.7.4-1_win32.zip"             -d "$WIN32/libxml2-2.7.4"
 unzip -qo  "$CACHE/libxml2-dev_2.7.4-1_win32.zip"         -d "$WIN32/libxml2-2.7.4"
+unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
 unzip -qo  "$CACHE/cyrus-sasl-2.1.22-daa1.zip"            -d "$WIN32"
 unzip -qo  "$CACHE/$PERL-MSWin32-x86-294981.zip"          -d "$WIN32"
 unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
