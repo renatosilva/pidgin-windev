@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2012.10.1-dev"
+VERSION="2012.10.2-dev"
 PIDGIN_VERSION="2.10.6.next"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
@@ -147,7 +147,8 @@ done
 
 echo "$EXTRACTING_PIDGIN"
 tar -xjf "$CACHE/pidgin-$PIDGIN_VERSION.tar.bz2" --directory "$DEVROOT"
-echo "MONO_SIGNCODE=true" > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
+echo 'MONO_SIGNCODE="echo ***Bypassing signcode"' > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
+echo 'GPG_SIGN="echo ***Bypassing gpg"         ' >> "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
 
 echo "$EXTRACTING_DEPENDENCIES"
 unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.40.4-1_win32"
