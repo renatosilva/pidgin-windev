@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PIDGIN_VERSION="2.10.6"
+PIDGIN_VERSION="2.10.6.next"
 
 if [[ -z "$1" || "$1" = "--help" ]]; then echo "
-    Pidgin Windows Development Setup 2012.10.1-for-2.10.6
+    Pidgin Windows Development Setup 2012.10.1-dev
     Copyright 2012 Renato Silva
     GPLv2 licensed
 
@@ -109,9 +109,9 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/perl_5-10-0.tar.gz"                                                            \
     "$PIDGIN_BASE_URL/gtkspell-2.0.16.tar.bz2"                                                       \
     "$PIDGIN_BASE_URL/enchant_1.6.0_win32.zip"                                                       \
-    "$PIDGIN_BASE_URL/silc-toolkit-1.1.8.tar.gz"                                                     \
-    "$PIDGIN_BASE_URL/cyrus-sasl-2.1.22-daa1.zip"                                                    \
-    "$PIDGIN_BASE_URL/nss-3.12.5-nspr-4.8.2.tar.gz"                                                  \
+    "$PIDGIN_BASE_URL/silc-toolkit-1.1.10.tar.gz"                                                    \
+    "$PIDGIN_BASE_URL/cyrus-sasl-2.1.25.tar.gz"                                                      \
+    "$PIDGIN_BASE_URL/nss-3.13.6-nspr-4.9.2.tar.gz"                                                  \
     "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa2-win32.zip"                                                \
     "$PIDGIN_BASE_URL/pidgin-inst-deps-20100315.tar.gz"                                              \
     "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
@@ -146,7 +146,6 @@ unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.1
 unzip -qo  "$CACHE/libxml2_2.7.4-1_win32.zip"             -d "$WIN32/libxml2-2.7.4"
 unzip -qo  "$CACHE/libxml2-dev_2.7.4-1_win32.zip"         -d "$WIN32/libxml2-2.7.4"
 unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
-unzip -qo  "$CACHE/cyrus-sasl-2.1.22-daa1.zip"            -d "$WIN32"
 unzip -qo  "$CACHE/$PERL-MSWin32-x86-294981.zip"          -d "$WIN32"
 unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
 unzip -qo  "$CACHE/$NSIS.zip"                             -d "$WIN32"
