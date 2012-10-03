@@ -123,10 +123,10 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa2-win32.zip"                                                \
     "$PIDGIN_BASE_URL/pidgin-inst-deps-20100315.tar.gz"                                              \
     "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
-    "$GNOME_BASE_URL/dependencies/libxml2_2.7.4-1_win32.zip"                                         \
+    "$GNOME_BASE_URL/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
     "$GNOME_BASE_URL/dependencies/gettext-runtime-0.17-1.zip"                                        \
     "$GNOME_BASE_URL/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
-    "$GNOME_BASE_URL/dependencies/libxml2-dev_2.7.4-1_win32.zip"                                     \
+    "$GNOME_BASE_URL/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
     "$GNOME_BASE_URL/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$NSIS.zip/download"                    \
     "http://downloads.activestate.com/ActivePerl/releases/$PERL_VERSION/$PERL_PACKAGE.zip"           \
@@ -153,8 +153,8 @@ unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.
 unzip -qo  "$CACHE/gtk+-bundle_2.14.7-20090119_win32.zip" -d "$WIN32/gtk_2_0-2.14"
 unzip -qo  "$CACHE/gettext-tools-0.17.zip"                -d "$WIN32/gettext-0.17"
 unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.17"
-unzip -qo  "$CACHE/libxml2_2.7.4-1_win32.zip"             -d "$WIN32/libxml2-2.7.4"
-unzip -qo  "$CACHE/libxml2-dev_2.7.4-1_win32.zip"         -d "$WIN32/libxml2-2.7.4"
+unzip -qo  "$CACHE/libxml2_2.9.0-1_win32.zip"             -d "$WIN32/libxml2-2.9.0"
+unzip -qo  "$CACHE/libxml2-dev_2.9.0-1_win32.zip"         -d "$WIN32/libxml2-2.9.0"
 unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
 unzip -qo  "$CACHE/$PERL_PACKAGE.zip"                     -d "$WIN32"
 unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
