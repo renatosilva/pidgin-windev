@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2012.10.2-dev"
+VERSION="2012.10.7-dev"
 PIDGIN_VERSION="2.10.6.next"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
@@ -120,7 +120,7 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/silc-toolkit-1.1.10.tar.gz"                                                    \
     "$PIDGIN_BASE_URL/cyrus-sasl-2.1.25.tar.gz"                                                      \
     "$PIDGIN_BASE_URL/nss-3.13.6-nspr-4.9.2.tar.gz"                                                  \
-    "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa2-win32.zip"                                                \
+    "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa3-win32.zip"                                                \
     "$PIDGIN_BASE_URL/pidgin-inst-deps-20100315.tar.gz"                                              \
     "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
     "$GNOME_BASE_URL/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
@@ -159,7 +159,7 @@ unzip -qo  "$CACHE/libxml2_2.9.0-1_win32.zip"             -d "$WIN32/libxml2-2.9
 unzip -qo  "$CACHE/libxml2-dev_2.9.0-1_win32.zip"         -d "$WIN32/libxml2-2.9.0"
 unzip -qo  "$CACHE/$PERL.zip"                             -d "$WIN32/$PERL"
 unzip -qo  "$CACHE/$NSIS.zip"                             -d "$WIN32"
-unzip -qo  "$CACHE/meanwhile-1.0.2_daa2-win32.zip"        -d "$WIN32"
+unzip -qo  "$CACHE/meanwhile-1.0.2_daa3-win32.zip"        -d "$WIN32"
 unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
 tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
 
