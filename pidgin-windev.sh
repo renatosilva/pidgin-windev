@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2012.10.7-dev"
+VERSION="2012.10.14-dev"
 PIDGIN_VERSION="2.10.6.next"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
@@ -57,7 +57,7 @@ PIDGIN_BASE_URL="https://developer.pidgin.im/static/win32"
 GNOME_BASE_URL="http://ftp.gnome.org/pub/gnome/binaries/win32"
 MINGW_BASE_URL="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 MINGW_GCC4_URL="$MINGW_BASE_URL/gcc/Version4/Previous%20Release%20gcc-4.4.0"
-MINGW_PACKAGES="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip bsdtar msys-wget msys-libopenssl"
+MINGW_PACKAGES="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl"
 
 INSTALLING_PACKAGES="Installing some MSYS packages..."
 DOWNLOADING_MINGW="Downloading specific MinGW GCC..."
