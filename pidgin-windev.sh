@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2012.10.14-dev"
+VERSION="2012.12.12-dev"
 PIDGIN_VERSION="2.10.6.next"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
@@ -32,7 +32,7 @@ if [[ -z "$1" || "$1" = "--help" ]]; then echo "
     $CA_CERT. Also, if you want to sign
     the installers, you will need to follow the manual instructions.
 
-    Usage: $0 DEVELOPMENT_ROOT [--pidgin-version VERSION] | --help"
+    Usage: $0 DEVELOPMENT_ROOT [--path | --pidgin-version VERSION] | --help"
     echo
     exit
 fi
