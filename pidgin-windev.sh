@@ -1,7 +1,7 @@
 #!/bin/bash
 
-VERSION="2012.12.19-dev"
-PIDGIN_VERSION="2.10.6.next"
+VERSION="2013.2.16-dev"
+PIDGIN_VERSION="2.10.7"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
@@ -9,18 +9,15 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Copyright 2012 Renato Silva
     GPLv2 licensed
 
-    Hi, I am supposed to set up a Windows build environment for Pidgin
+    Hi, I am supposed to set up a Windows build environment for Pidgin $PIDGIN_VERSION
     in one single shot, without the pain of the manual steps described in
     http://developer.pidgin.im/wiki/BuildingWinPidgin.
 
     I was designed based on that page, and I will try my best to perform what
     is described there, but I must say in advance you will need to manually
     install GnuPG, Bonjour SDK, and Nsisunz NSIS plugin. You will be given more
-    details when I finish.
-
-    I was designed to run under MinGW MSYS with mingw-get command available.
-    Assumed Pidgin version is $PIDGIN_VERSION, but you can pass me some other
-    version from 2.7 on and I should work just like the manual instructions.
+    details when I finish. I was designed to run under MinGW MSYS with
+    mingw-get command available.
 
     I am going to create a buildbox containing specific versions of GCC, Perl
     and NSIS, along with Pidgin build dependencies. After running me and
@@ -32,7 +29,7 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     $CA_CERT. Also, if you want to sign
     the installers, you will need to follow the manual instructions.
 
-    Usage: $0 DEVELOPMENT_ROOT [--path | --pidgin-version VERSION] | --help"
+    Usage: $0 DEVELOPMENT_ROOT [--path] | --help"
     echo
     exit
 fi
@@ -71,7 +68,6 @@ EXTRACTING_DEPENDENCIES="Extracting build dependencies..."
 # Just print PATH setup, or read pidgin version
 
 [ "$2" = "--path" ] && echo "export PATH=\"$WIN32/$MINGW/bin:$WIN32/$PERL/perl/bin:$WIN32/$NSIS:$PATH\"" && exit
-[ "$2" = "--pidgin-version" ] && [ ! -z  "$3" ] && PIDGIN_VERSION="$3"
 
 
 # Install what is possible with MinGW automated installer
