@@ -6,7 +6,7 @@ CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $VERSION
-    Copyright 2012 Renato Silva
+    Copyright 2012, 2013 Renato Silva
     GPLv2 licensed
 
     Hi, I am supposed to set up a Windows build environment for Pidgin $PIDGIN_VERSION
