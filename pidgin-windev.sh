@@ -162,7 +162,7 @@ tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
 for GZIP_TARBALL in "$CACHE/"*".tar.gz"; do
     bsdtar -xzf "$GZIP_TARBALL" --directory "$WIN32"
 done
-cp -v "$WIN32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$WIN32/$NSIS/Plugins/"
+cp "$WIN32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$WIN32/$NSIS/Plugins/"
 echo
 
 
