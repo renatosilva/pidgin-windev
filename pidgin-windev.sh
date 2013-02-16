@@ -29,7 +29,7 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     $CA_CERT. Also, if you want to sign
     the installers, you will need to follow the manual instructions.
 
-    Usage: $0 DEVELOPMENT_ROOT [--path] | --help"
+    Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
     echo
     exit
 fi
