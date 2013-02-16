@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="2013.2.16-dev"
+VERSION="2013.2.16"
 PIDGIN_VERSION="2.10.7"
 CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
@@ -117,7 +117,7 @@ for BUILD_DEEPENDENCY in \
     "$PIDGIN_BASE_URL/cyrus-sasl-2.1.25.tar.gz"                                                      \
     "$PIDGIN_BASE_URL/nss-3.13.6-nspr-4.9.2.tar.gz"                                                  \
     "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa3-win32.zip"                                                \
-    "$PIDGIN_BASE_URL/pidgin-inst-deps-20100315.tar.gz"                                              \
+    "$PIDGIN_BASE_URL/pidgin-inst-deps-20130214.tar.gz"                                              \
     "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
     "$GNOME_BASE_URL/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
     "$GNOME_BASE_URL/dependencies/gettext-runtime-0.17-1.zip"                                        \
@@ -162,6 +162,7 @@ tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
 for GZIP_TARBALL in "$CACHE/"*".tar.gz"; do
     bsdtar -xzf "$GZIP_TARBALL" --directory "$WIN32"
 done
+cp -v "$WIN32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$WIN32/$NSIS/Plugins/"
 echo
 
 
