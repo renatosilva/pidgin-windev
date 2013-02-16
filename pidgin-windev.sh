@@ -143,8 +143,8 @@ done
 
 echo "$EXTRACTING_PIDGIN"
 tar -xjf "$CACHE/pidgin-$PIDGIN_VERSION.tar.bz2" --directory "$DEVROOT"
-echo 'MONO_SIGNCODE="echo ***Bypassing signcode"' > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
-echo 'GPG_SIGN="echo ***Bypassing gpg"         ' >> "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
+echo "MONO_SIGNCODE = echo ***Bypassing signcode" > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
+echo "GPG_SIGN = echo ***Bypassing gpg"           >> "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
 
 echo "$EXTRACTING_DEPENDENCIES"
 unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.40.4-1_win32"
