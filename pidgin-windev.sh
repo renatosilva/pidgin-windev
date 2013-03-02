@@ -1,15 +1,15 @@
 #!/bin/bash
 
-VERSION="2013.2.16"
-PIDGIN_VERSION="2.10.7"
-CA_CERT="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
+version="2013.3.2"
+pidgin_version="2.10.7"
+ca_cert="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
-    Pidgin Windows Development Setup $VERSION
+    Pidgin Windows Development Setup $version
     Copyright 2012, 2013 Renato Silva
     GPLv2 licensed
 
-    Hi, I am supposed to set up a Windows build environment for Pidgin $PIDGIN_VERSION
+    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version
     in one single shot, without the pain of the manual steps described in
     http://developer.pidgin.im/wiki/BuildingWinPidgin.
 
@@ -26,7 +26,7 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
 
     NOTES: in order to download Pidgin dependencies without security warnings,
     place the appropriate CA certificate under the following location:
-    $CA_CERT. Also, if you want to sign
+    $ca_cert. Also, if you want to sign
     the installers, you will need to follow the manual instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
@@ -36,133 +36,133 @@ fi
 
 download() {
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
-    wget --no-check-certificate --ca-certificate "$CA_CERT" -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
+    wget --no-check-certificate --ca-certificate "$ca_cert" -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
 }
 
 
 # Configuration
 
-DEVROOT="$1"
-CACHE="$DEVROOT/downloads"
-WIN32="$DEVROOT/win32-dev"
-PERL_VERSION="5.10.1.5"
-PERL="strawberry-perl-$PERL_VERSION"
-MINGW="mingw-gcc-4.4.0"
-NSIS="nsis-2.46"
+devroot="$1"
+cache="$devroot/downloads"
+win32="$devroot/win32-dev"
+perl_version="5.10.1.5"
+perl="strawberry-perl-$perl_version"
+mingw="mingw-gcc-4.4.0"
+nsis="nsis-2.46"
 
-PIDGIN_BASE_URL="https://developer.pidgin.im/static/win32"
-GNOME_BASE_URL="http://ftp.gnome.org/pub/gnome/binaries/win32"
-MINGW_BASE_URL="http://sourceforge.net/projects/mingw/files/MinGW/Base"
-MINGW_GCC4_URL="$MINGW_BASE_URL/gcc/Version4/Previous%20Release%20gcc-4.4.0"
-MINGW_PACKAGES="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl"
+pidgin_base_url="https://developer.pidgin.im/static/win32"
+gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
+mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
+mingw_gcc4_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
+mingw_packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl"
 
-INSTALLING_PACKAGES="Installing some MSYS packages..."
-DOWNLOADING_MINGW="Downloading specific MinGW GCC..."
-DOWNLOADING_PIDGIN="Downloading Pidgn source code..."
-DOWNLOADING_DEPENDENCIES="Downloading build dependencies..."
-EXTRACTING_MINGW="Extracting MinGW GCC..."
-EXTRACTING_PIDGIN="Extracting Pidgin source code..."
-EXTRACTING_DEPENDENCIES="Extracting build dependencies..."
+installing_packages="Installing some MSYS packages..."
+downloading_mingw="Downloading specific MinGW GCC..."
+downloading_pidgin="Downloading Pidgn source code..."
+downloading_dependencies="Downloading build dependencies..."
+extracting_mingw="Extracting MinGW GCC..."
+extracting_pidgin="Extracting Pidgin source code..."
+extracting_dependencies="Extracting build dependencies..."
 
 
 # Just print PATH setup, or read pidgin version
 
-[ "$2" = "--path" ] && echo "export PATH=\"$WIN32/$MINGW/bin:$WIN32/$PERL/perl/bin:$WIN32/$NSIS:$PATH\"" && exit
+[ "$2" = "--path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
 
 
 # Install what is possible with MinGW automated installer
 
-echo "$INSTALLING_PACKAGES"
-for PACKAGE in $MINGW_PACKAGES; do
-    echo -e "\tChecking $PACKAGE..."
-    mingw-get install "$PACKAGE" 2>&1 | grep -v 'installed' | grep -i 'error'
+echo "$installing_packages"
+for package in $mingw_packages; do
+    echo -e "\tChecking $package..."
+    mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
 done
 echo
 
 
 # Download MinGW GCC
 
-echo "$DOWNLOADING_MINGW"
-for GCC_PACKAGE in \
-    "$MINGW_GCC4_URL/gmp-4.2.4-mingw32-dll.tar.gz/download"                                         \
-    "$MINGW_GCC4_URL/mpfr-2.4.1-mingw32-dll.tar.gz/download"                                        \
-    "$MINGW_GCC4_URL/gcc-core-4.4.0-mingw32-bin.tar.gz/download"                                    \
-    "$MINGW_GCC4_URL/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
-    "$MINGW_GCC4_URL/pthreads-w32-2.8.0-mingw32-dll.tar.gz/download"                                \
-    "$MINGW_BASE_URL/w32api/w32api-3.14/w32api-3.14-mingw32-dev.tar.gz/download"                    \
-    "$MINGW_BASE_URL/mingw-rt/mingwrt-3.17/mingwrt-3.17-mingw32-dev.tar.gz/download"                \
-    "$MINGW_BASE_URL/mingw-rt/mingwrt-3.17/mingwrt-3.17-mingw32-dll.tar.gz/download"                \
-    "$MINGW_BASE_URL/binutils/binutils-2.20/binutils-2.20-1-mingw32-bin.tar.gz/download"            \
-    "$MINGW_BASE_URL/libiconv/libiconv-1.13.1-1/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma/download"  \
-; do download "$GCC_PACKAGE" "$CACHE/$MINGW"; done
+echo "$downloading_mingw"
+for gcc_package in \
+    "$mingw_gcc4_url/gmp-4.2.4-mingw32-dll.tar.gz/download"                                         \
+    "$mingw_gcc4_url/mpfr-2.4.1-mingw32-dll.tar.gz/download"                                        \
+    "$mingw_gcc4_url/gcc-core-4.4.0-mingw32-bin.tar.gz/download"                                    \
+    "$mingw_gcc4_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
+    "$mingw_gcc4_url/pthreads-w32-2.8.0-mingw32-dll.tar.gz/download"                                \
+    "$mingw_base_url/w32api/w32api-3.14/w32api-3.14-mingw32-dev.tar.gz/download"                    \
+    "$mingw_base_url/mingw-rt/mingwrt-3.17/mingwrt-3.17-mingw32-dev.tar.gz/download"                \
+    "$mingw_base_url/mingw-rt/mingwrt-3.17/mingwrt-3.17-mingw32-dll.tar.gz/download"                \
+    "$mingw_base_url/binutils/binutils-2.20/binutils-2.20-1-mingw32-bin.tar.gz/download"            \
+    "$mingw_base_url/libiconv/libiconv-1.13.1-1/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma/download"  \
+; do download "$gcc_package" "$cache/$mingw"; done
 echo
 
 
 # Download Pidgin source tarball
 
-echo "$DOWNLOADING_PIDGIN"
-download "prdownloads.sourceforge.net/pidgin/pidgin-$PIDGIN_VERSION.tar.bz2" "$CACHE"
+echo "$downloading_pidgin"
+download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
 echo
 
 
 # Download Pidgin build dependencies
 
-echo "$DOWNLOADING_DEPENDENCIES"
-for BUILD_DEEPENDENCY in \
-    "$PIDGIN_BASE_URL/tcl-8.4.5.tar.gz"                                                              \
-    "$PIDGIN_BASE_URL/perl_5-10-0.tar.gz"                                                            \
-    "$PIDGIN_BASE_URL/gtkspell-2.0.16.tar.bz2"                                                       \
-    "$PIDGIN_BASE_URL/enchant_1.6.0_win32.zip"                                                       \
-    "$PIDGIN_BASE_URL/silc-toolkit-1.1.10.tar.gz"                                                    \
-    "$PIDGIN_BASE_URL/cyrus-sasl-2.1.25.tar.gz"                                                      \
-    "$PIDGIN_BASE_URL/nss-3.13.6-nspr-4.9.2.tar.gz"                                                  \
-    "$PIDGIN_BASE_URL/meanwhile-1.0.2_daa3-win32.zip"                                                \
-    "$PIDGIN_BASE_URL/pidgin-inst-deps-20130214.tar.gz"                                              \
-    "$GNOME_BASE_URL/dependencies/gettext-tools-0.17.zip"                                            \
-    "$GNOME_BASE_URL/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
-    "$GNOME_BASE_URL/dependencies/gettext-runtime-0.17-1.zip"                                        \
-    "$GNOME_BASE_URL/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
-    "$GNOME_BASE_URL/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
-    "$GNOME_BASE_URL/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
-    "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$NSIS.zip/download"                    \
-    "http://strawberryperl.com/download/$PERL_VERSION/$PERL.zip"                                     \
-; do download "$BUILD_DEEPENDENCY" "$CACHE"; done
+echo "$downloading_dependencies"
+for build_deependency in \
+    "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
+    "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
+    "$pidgin_base_url/gtkspell-2.0.16.tar.bz2"                                                       \
+    "$pidgin_base_url/enchant_1.6.0_win32.zip"                                                       \
+    "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz"                                                    \
+    "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz"                                                      \
+    "$pidgin_base_url/nss-3.13.6-nspr-4.9.2.tar.gz"                                                  \
+    "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip"                                                \
+    "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz"                                              \
+    "$gnome_base_url/dependencies/gettext-tools-0.17.zip"                                            \
+    "$gnome_base_url/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
+    "$gnome_base_url/dependencies/gettext-runtime-0.17-1.zip"                                        \
+    "$gnome_base_url/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
+    "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
+    "$gnome_base_url/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
+    "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
+    "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
+; do download "$build_deependency" "$cache"; done
 echo
 
 
 # Exctract downloads
 
-echo "$EXTRACTING_MINGW"
-mkdir -p "$WIN32/$MINGW"
-mkdir -p "$WIN32/gcc-core-4.4.0-mingw32-dll"
-tar -xzf "$CACHE/$MINGW/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$WIN32/gcc-core-4.4.0-mingw32-dll"
-tar  --lzma -xf "$CACHE/$MINGW/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma" --directory "$WIN32/$MINGW"
-for GZIP_TARBALL in "$CACHE/$MINGW/"*".tar.gz"; do
-    tar -xzf "$GZIP_TARBALL" --directory "$WIN32/$MINGW"
+echo "$extracting_mingw"
+mkdir -p "$win32/$mingw"
+mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
+tar -xzf "$cache/$mingw/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
+tar  --lzma -xf "$cache/$mingw/libiconv-1.13.1-1-mingw32-dll-2.tar.lzma" --directory "$win32/$mingw"
+for gzip_tarball in "$cache/$mingw/"*".tar.gz"; do
+    tar -xzf "$gzip_tarball" --directory "$win32/$mingw"
 done
 
-echo "$EXTRACTING_PIDGIN"
-tar -xjf "$CACHE/pidgin-$PIDGIN_VERSION.tar.bz2" --directory "$DEVROOT"
-echo "MONO_SIGNCODE = echo ***Bypassing signcode" > "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
-echo "GPG_SIGN = echo ***Bypassing gpg"           >> "$DEVROOT/pidgin-$PIDGIN_VERSION/local.mak"
+echo "$extracting_pidgin"
+tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
+echo "MONO_SIGNCODE = echo ***Bypassing signcode" > "$devroot/pidgin-$pidgin_version/local.mak"
+echo "GPG_SIGN = echo ***Bypassing gpg"           >> "$devroot/pidgin-$pidgin_version/local.mak"
 
-echo "$EXTRACTING_DEPENDENCIES"
-unzip -qo  "$CACHE/intltool_0.40.4-1_win32.zip"           -d "$WIN32/intltool_0.40.4-1_win32"
-unzip -qo  "$CACHE/gtk+-bundle_2.14.7-20090119_win32.zip" -d "$WIN32/gtk_2_0-2.14"
-unzip -qo  "$CACHE/gettext-tools-0.17.zip"                -d "$WIN32/gettext-0.17"
-unzip -qo  "$CACHE/gettext-runtime-0.17-1.zip"            -d "$WIN32/gettext-0.17"
-unzip -qo  "$CACHE/libxml2_2.9.0-1_win32.zip"             -d "$WIN32/libxml2-2.9.0"
-unzip -qo  "$CACHE/libxml2-dev_2.9.0-1_win32.zip"         -d "$WIN32/libxml2-2.9.0"
-unzip -qo  "$CACHE/$PERL.zip"                             -d "$WIN32/$PERL"
-unzip -qo  "$CACHE/$NSIS.zip"                             -d "$WIN32"
-unzip -qo  "$CACHE/meanwhile-1.0.2_daa3-win32.zip"        -d "$WIN32"
-unzip -qo  "$CACHE/enchant_1.6.0_win32.zip"               -d "$WIN32"
-tar  -xjf  "$CACHE/gtkspell-2.0.16.tar.bz2"      --directory "$WIN32"
+echo "$extracting_dependencies"
+unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"           -d "$win32/intltool_0.40.4-1_win32"
+unzip -qo  "$cache/gtk+-bundle_2.14.7-20090119_win32.zip" -d "$win32/gtk_2_0-2.14"
+unzip -qo  "$cache/gettext-tools-0.17.zip"                -d "$win32/gettext-0.17"
+unzip -qo  "$cache/gettext-runtime-0.17-1.zip"            -d "$win32/gettext-0.17"
+unzip -qo  "$cache/libxml2_2.9.0-1_win32.zip"             -d "$win32/libxml2-2.9.0"
+unzip -qo  "$cache/libxml2-dev_2.9.0-1_win32.zip"         -d "$win32/libxml2-2.9.0"
+unzip -qo  "$cache/$perl.zip"                             -d "$win32/$perl"
+unzip -qo  "$cache/$nsis.zip"                             -d "$win32"
+unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"        -d "$win32"
+unzip -qo  "$cache/enchant_1.6.0_win32.zip"               -d "$win32"
+tar  -xjf  "$cache/gtkspell-2.0.16.tar.bz2"      --directory "$win32"
 
-for GZIP_TARBALL in "$CACHE/"*".tar.gz"; do
-    bsdtar -xzf "$GZIP_TARBALL" --directory "$WIN32"
+for gzip_tarball in "$cache/"*".tar.gz"; do
+    bsdtar -xzf "$gzip_tarball" --directory "$win32"
 done
-cp "$WIN32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$WIN32/$NSIS/Plugins/"
+cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
 
@@ -170,8 +170,8 @@ echo
 
 echo "Finished setting up the build environment, remaining manual steps are:
 1. Install GnuPG and make it available from PATH
-2. Install Bonjour SDK under $WIN32/Bonjour_SDK
-3. Install Nsisunz plugin for NSIS under $WIN32/$NSIS/Plugins
+2. Install Bonjour SDK under $win32/Bonjour_SDK
+3. Install Nsisunz plugin for NSIS under $win32/$nsis/Plugins
 4. Add downloaded GCC, Perl and NSIS before others in your PATH by running
-   eval \$($0 $DEVROOT --path)."
+   eval \$($0 $devroot --path)."
 echo
