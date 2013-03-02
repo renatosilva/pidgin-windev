@@ -54,7 +54,7 @@ pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 mingw_gcc4_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
-mingw_packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl"
+mingw_packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
 installing_packages="Installing some MSYS packages..."
 downloading_mingw="Downloading specific MinGW GCC..."
