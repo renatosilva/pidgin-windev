@@ -15,8 +15,8 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
 
     I was designed based on that page, and I will try my best to perform what
     is described there, but I must say in advance you will need to manually
-    install GnuPG, Bonjour SDK, and Nsisunz NSIS plugin. You will be given more
-    details when I finish. I was designed to run under MinGW MSYS with
+    install GnuPG, Bonjour SDK, and the Nsisunz NSIS plugin. You will be given
+    more details when I finish. I was designed to run under MinGW MSYS with
     mingw-get command available.
 
     I am going to create a buildbox containing specific versions of GCC, Perl
