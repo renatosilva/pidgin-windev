@@ -24,8 +24,9 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     finishing the manual steps you should be able to build Pidgin with
     '\$make -f Makefile.mingw installers' or the like.
 
-    NOTES: in order to download Pidgin dependencies without security warnings,
-    place the appropriate CA certificate under the following location:
+    NOTES: source code tarball for 2.10.7 is broken and cannot be built without
+    patching. In order to download Pidgin dependencies without security
+    warnings, place the appropriate CA certificate under the following location:
     $ca_cert. Also, if you want to sign
     the installers, you will need to follow the manual instructions.
 
