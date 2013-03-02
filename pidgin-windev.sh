@@ -2,7 +2,6 @@
 
 version="2013.3.2"
 pidgin_version="2.10.7"
-ca_cert="/var/ssl/rootcerts/AddTrustExternalCARoot.crt"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
@@ -27,9 +26,9 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
 
     NOTES: source code tarball for 2.10.7 is broken and cannot be built without
     patching. In order to download Pidgin dependencies without security
-    warnings, place the appropriate CA certificate under the following location:
-    $ca_cert. Also, if you want to sign
-    the installers, you will need to follow the manual instructions.
+    warnings, you need to have the appropriate CA certificates available to
+    wget. Also, if you want to sign the installers, you will need to follow the
+    manual instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
     echo
@@ -38,7 +37,7 @@ fi
 
 download() {
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
-    wget --no-check-certificate --ca-certificate "$ca_cert" -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
+    wget --no-check-certificate -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
 }
 
 
