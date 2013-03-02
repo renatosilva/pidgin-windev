@@ -9,8 +9,9 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Copyright 2012, 2013 Renato Silva
     GPLv2 licensed
 
-    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version
-    in one single shot, without the pain of the manual steps described in
+    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version    
+    in one single shot, suitable for building with MinGW MSYS, and without the
+    pain of the manual steps described in wiki documentation at
     http://developer.pidgin.im/wiki/BuildingWinPidgin.
 
     I was designed based on that page, and I will try my best to perform what
