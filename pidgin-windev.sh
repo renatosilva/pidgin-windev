@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="2013.3.2"
+version="2013.10.9"
 pidgin_version="2.10.7"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
@@ -8,7 +8,7 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Copyright 2012, 2013 Renato Silva
     GPLv2 licensed
 
-    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version    
+    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version
     in one single shot, suitable for building with MinGW MSYS, and without the
     pain of the manual steps described in wiki documentation at
     http://developer.pidgin.im/wiki/BuildingWinPidgin.
@@ -22,7 +22,7 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     I am going to create a buildbox containing specific versions of GCC, Perl
     and NSIS, along with Pidgin build dependencies. After running me and
     finishing the manual steps you should be able to build Pidgin with
-    '\$make -f Makefile.mingw installers' or the like.
+    'make -f Makefile.mingw installers' or the like.
 
     NOTES: source code tarball for 2.10.7 is broken and cannot be built without
     patching. In order to download Pidgin dependencies without security
