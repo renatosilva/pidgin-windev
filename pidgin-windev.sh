@@ -66,7 +66,7 @@ extracting_pidgin="Extracting Pidgin source code..."
 extracting_dependencies="Extracting build dependencies..."
 
 
-# Just print PATH setup, or read pidgin version
+# Just print PATH setup
 
 [ "$2" = "--path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
 
