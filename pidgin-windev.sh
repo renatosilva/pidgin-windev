@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version="2013.10.27"
-pidgin_version="2.10.7"
+version="2013.10.27-dev"
+pidgin_version="2.10.7.next"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
@@ -153,8 +153,8 @@ done
 
 echo "$extracting_pidgin"
 tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-echo "MONO_SIGNCODE = echo ***Bypassing signcode" > "$devroot/pidgin-$pidgin_version/local.mak"
-echo "GPG_SIGN = echo ***Bypassing gpg"           >> "$devroot/pidgin-$pidgin_version/local.mak"
+echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_version/local.mak"
+echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_version/local.mak"
 
 echo "$extracting_dependencies"
 unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"           -d "$win32/intltool_0.40.4-1_win32"
