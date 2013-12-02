@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="2013.11.4-dev"
+version="2013.12.2-dev"
 pidgin_version="2.10.7.next"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
@@ -127,7 +127,7 @@ for build_deependency in \
     "$pidgin_base_url/enchant_1.6.0_win32.zip"                                                       \
     "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz"                                                    \
     "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz"                                                      \
-    "$pidgin_base_url/nss-3.15.2-nspr-4.10.1.tar.gz"                                                 \
+    "$pidgin_base_url/nss-3.15.3-nspr-4.10.2.tar.gz"                                                 \
     "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip"                                                \
     "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz"                                              \
     "$gnome_base_url/dependencies/gettext-tools-0.17.zip"                                            \
