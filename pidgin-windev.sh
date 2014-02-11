@@ -25,10 +25,10 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     'make -f Makefile.mingw installers' or the like.
 
     NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
-    patching. In order to download Pidgin dependencies without security
-    warnings, you need to have the appropriate CA certificates available to
-    wget. Also, if you want to sign the installers, you will need to follow the
-    manual instructions.
+    patching, or without some wget version newer than 1.12. In order to download
+    Pidgin dependencies without security warnings, you need to have the
+    appropriate CA certificates available to wget. Also, if you want to sign the
+    installers, you will need to follow the manual instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
     echo
