@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="2014.2.11"
+version="2014.7.8"
 pidgin_version="2.10.9"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
@@ -43,7 +43,7 @@ download() {
 
 # Configuration
 
-devroot="$1"
+devroot=$(readlink -m "$1")
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 perl_version="5.10.1.5"
