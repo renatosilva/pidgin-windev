@@ -2,6 +2,7 @@
 
 version="2014.7.8"
 pidgin_version="2.10.9"
+ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
@@ -26,9 +27,10 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
 
     NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
     patching, or without some wget version newer than 1.12. In order to download
-    Pidgin dependencies without security warnings, you need to have the
-    appropriate CA certificates available to wget. Also, if you want to sign the
-    installers, you will need to follow the manual instructions.
+    Pidgin dependencies without security warnings, this script obtains the
+    appropriate CA bundle from $ca_bundle_url. Finally, if
+    you want to sign the installers, you will need to follow the manual
+    instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
     echo
@@ -37,7 +39,12 @@ fi
 
 download() {
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
-    wget --no-check-certificate -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
+    if [[ -f "$ca_bundle" ]]; then
+        cert_args="--ca-certificate $ca_bundle"
+    else
+        cert_args="--no-check-certificate"
+    fi
+    wget $cert_args -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
 }
 
 
@@ -46,6 +53,7 @@ download() {
 devroot=$(readlink -m "$1")
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
+ca_bundle="/tmp/mozilla.pem"
 perl_version="5.10.1.5"
 perl="strawberry-perl-$perl_version"
 mingw="mingw-gcc-4.7.2"
@@ -62,6 +70,7 @@ installing_packages="Installing some MSYS packages..."
 downloading_mingw="Downloading specific MinGW GCC..."
 downloading_pidgin="Downloading Pidgn source code..."
 downloading_dependencies="Downloading build dependencies..."
+downloading_ca_bundle="Downloading CA bundle..."
 extracting_mingw="Extracting MinGW GCC..."
 extracting_pidgin="Extracting Pidgin source code..."
 extracting_dependencies="Extracting build dependencies..."
@@ -81,6 +90,11 @@ for package in $mingw_packages; do
 done
 echo
 
+# Download root certificates
+
+printf "$downloading_ca_bundle\n\t"
+wget -q -O "$ca_bundle" "$ca_bundle_url" && echo "Saved to $ca_bundle."
+echo
 
 # Download MinGW GCC
 
