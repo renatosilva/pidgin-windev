@@ -11,9 +11,9 @@
 ##
 ## I was designed based on that guide, and I will try my best to perform what
 ## is described there, but I must say in advance you will need to manually
-## install GnuPG, Bonjour SDK, and the Nsisunz NSIS plugin. You will be given
-## more details when I finish. I was designed to run under MinGW MSYS with
-## mingw-get command available.
+## install GnuPG and the Bonjour SDK. You will be given more details when I
+## finish. I was designed to run under MinGW MSYS with mingw-get command
+## available.
 ##
 ## I am going to create a buildbox containing specific versions of GCC, Perl and
 ## NSIS, along with Pidgin build dependencies. After running me and finishing
@@ -189,6 +189,7 @@ for build_deependency in \
     "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
     "$gnome_base_url/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
+    "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
     "$mingw_gcc44_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
 ; do download "$build_deependency" "$cache"; done
@@ -228,6 +229,7 @@ done
 
 mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
 tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
+unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll" -d "$win32/$nsis/Plugins/"
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
@@ -237,7 +239,6 @@ echo
 echo "Finished setting up the build environment, remaining manual steps are:
 1. Install GnuPG and make it available from PATH
 2. Install Bonjour SDK under $win32/Bonjour_SDK
-3. Install Nsisunz plugin for NSIS under $win32/$nsis/Plugins
-4. Add downloaded GCC, Perl and NSIS before others in your PATH by running
+3. Add downloaded GCC, Perl and NSIS before others in your PATH by running
    eval \$($0 $devroot --path)."
 echo
