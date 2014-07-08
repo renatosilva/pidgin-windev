@@ -1,41 +1,79 @@
 #!/bin/bash
 
-version="2014.7.8"
+##
+##    Pidgin Windows Development Setup 2014.7.8
+##    Copyright 2012-2014 Renato Silva
+##    GPLv2 licensed
+##
+## Hi, I am supposed to set up a Windows build environment for Pidgin 2.x in one
+## single shot, suitable for building with MinGW MSYS, and without the long
+## manual steps described at http://developer.pidgin.im/wiki/BuildingWinPidgin.
+##
+## I was designed based on that guide, and I will try my best to perform what
+## is described there, but I must say in advance you will need to manually
+## install GnuPG, Bonjour SDK, and the Nsisunz NSIS plugin. You will be given
+## more details when I finish. I was designed to run under MinGW MSYS with
+## mingw-get command available.
+##
+## I am going to create a buildbox containing specific versions of GCC, Perl and
+## NSIS, along with Pidgin build dependencies. After running me and finishing
+## the manual steps you should be able to build Pidgin with something like
+## "make -f Makefile.mingw installers" or similar.
+##
+## NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
+## patching, or without some wget version newer than 1.12. In order to download
+## Pidgin dependencies without security warnings, this script obtains the
+## appropriate CA bundle from the cURL website. Finally, if you want to sign the
+## installers, you will need to follow the manual instructions.
+##
+## Usage:
+##     @script.name DEVELOPMENT_ROOT [options]
+##
+##     -p, --path          Print system path configuration for evaluation after
+##                         the build environment has been created. This will
+##                         allow you to start compilation.
+##
+##     -w, --which-pidgin  Show the Pidgin version this script applies to. When
+##                         suffixed with "next" this script is currently under
+##                         development and unusable.
+##
+
+
+# Parse options and exit on development version
+
 pidgin_version="2.10.9"
-ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
+eval "$(from="$0" parse-options.rb "$@"; echo result=$?)"
 
-if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
-    Pidgin Windows Development Setup $version
-    Copyright 2012-2014 Renato Silva
-    GPLv2 licensed
+if [[ "$pidgin_version" = *next ]]; then
+    echo "This script is currently under development for the next version of"
+    echo "Pidgin after ${pidgin_version%.*} and is thus unusable. You need to use the version"
+    echo "that matches your desired Pidgin version. For general information"
+    echo "about this script, see --help."
+    exit 1
+fi
 
-    Hi, I am supposed to set up a Windows build environment for Pidgin $pidgin_version
-    in one single shot, suitable for building with MinGW MSYS, and without the
-    pain of the manual steps described in wiki documentation at
-    http://developer.pidgin.im/wiki/BuildingWinPidgin.
 
-    I was designed based on that page, and I will try my best to perform what
-    is described there, but I must say in advance you will need to manually
-    install GnuPG, Bonjour SDK, and the Nsisunz NSIS plugin. You will be given
-    more details when I finish. I was designed to run under MinGW MSYS with
-    mingw-get command available.
+# Which Pidgin version
 
-    I am going to create a buildbox containing specific versions of GCC, Perl
-    and NSIS, along with Pidgin build dependencies. After running me and
-    finishing the manual steps you should be able to build Pidgin with
-    'make -f Makefile.mingw installers' or the like.
-
-    NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
-    patching, or without some wget version newer than 1.12. In order to download
-    Pidgin dependencies without security warnings, this script obtains the
-    appropriate CA bundle from $ca_bundle_url. Finally, if
-    you want to sign the installers, you will need to follow the manual
-    instructions.
-
-    Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
-    echo
+if [[ -n "$which_pidgin" ]]; then
+    echo "This script applies to Pidgin ${pidgin_version}."
     exit
 fi
+
+
+# Development root
+
+devroot="${arguments[0]}"
+[[ ! -d "$devroot" && $result  = 0 ]] && echo "No valid development root specified, see --help."
+[[ ! -d "$devroot" || $result != 0 ]] && exit
+
+# Readlink from MSYS requires a Unix path
+cd "$devroot"
+devroot=$(readlink -m "$(pwd)")
+cd - > /dev/null
+
+
+# Download function
 
 download() {
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
@@ -50,10 +88,10 @@ download() {
 
 # Configuration
 
-devroot=$(readlink -m "$1")
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 ca_bundle="/tmp/mozilla.pem"
+ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
 perl_version="5.10.1.5"
 perl="strawberry-perl-$perl_version"
 mingw="mingw-gcc-4.7.2"
@@ -78,7 +116,7 @@ extracting_dependencies="Extracting build dependencies..."
 
 # Just print PATH setup
 
-[ "$2" = "--path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
+[ -n "$path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
 
 
 # Install what is possible with MinGW automated installer
