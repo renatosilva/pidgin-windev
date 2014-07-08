@@ -5,9 +5,10 @@
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
-## Hi, I am supposed to set up a Windows build environment for Pidgin 2.x in one
-## single shot, suitable for building with MinGW MSYS, and without the long
-## manual steps described at http://developer.pidgin.im/wiki/BuildingWinPidgin.
+## Hi, I am supposed to set up a Windows build environment for Pidgin or
+## Pidgin++ 2.x in one single shot, suitable for building with MinGW MSYS, and
+## without the long manual steps described in the wiki documentation at
+## http://developer.pidgin.im/wiki/BuildingWinPidgin.
 ##
 ## I was designed based on that guide, and I will try my best to perform what
 ## is described there, but I must say in advance you will need to manually
@@ -33,31 +34,56 @@
 ##                         the build environment has been created. This will
 ##                         allow you to start compilation.
 ##
-##     -w, --which-pidgin  Show the Pidgin version this script applies to. When
-##                         suffixed with "next" this script is currently under
-##                         development and unusable.
+##     -w, --which-pidgin  Show the Pidgin and Pidgin++ versions this script
+##                         can handle. When specified as "the next version" this
+##                         script is currently under development and unusable
+##                         for that Pidgin variant.
+##
+##         --for=VARIANT   The Pidgin variant for which a build environment will
+##                         be created, either "pidgin" (default) or "pidgin++".
 ##
 
 
-# Parse options and exit on development version
+# Parse options and which Pidgin/Pidgin++ version
 
 pidgin_version="2.10.9"
+plus_plus_version="2.10.9-RS137"
 eval "$(from="$0" parse-options.rb "$@"; echo result=$?)"
 
-if [[ "$pidgin_version" = *next ]]; then
-    echo "This script is currently under development for the next version of"
-    echo "Pidgin after ${pidgin_version%.*} and is thus unusable. You need to use the version"
-    echo "that matches your desired Pidgin version. For general information"
-    echo "about this script, see --help."
-    exit 1
+if [[ -n "$which_pidgin" ]]; then
+    [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
+    [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
+
+    echo "Pidgin: ${pidgin_prefix}${pidgin_version%.next}"
+    echo "Pidgin++: ${plus_plus_prefix}${plus_plus_version%.next}"
+    exit
 fi
 
 
-# Which Pidgin version
+# Pidgin variant
 
-if [[ -n "$which_pidgin" ]]; then
-    echo "This script applies to Pidgin ${pidgin_version}."
-    exit
+if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
+    echo "Unrecognized Pidgin variant: \`$for'."
+    echo "See --help for usage and options."
+    exit 1
+fi
+if [[ "$for" = "pidgin++" ]]; then
+    pidgin_variant="Pidgin++"
+    pidgin_variant_version="$plus_plus_version"
+    pidgin_plus_plus="yes"
+else
+    pidgin_variant="Pidgin"
+    pidgin_variant_version="$pidgin_version"
+fi
+
+
+# Under development
+
+if [[ "$pidgin_variant_version" = *.next ]]; then
+    echo "This script is under development for the next version of $pidgin_variant following"
+    echo "${pidgin_variant_version%.next} and is currently unusable. You need to use the version that"
+    echo "matches your desired $pidgin_variant version. For general information, see --help."
+    exit 1
 fi
 
 
@@ -106,11 +132,11 @@ mingw_packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsd
 
 installing_packages="Installing some MSYS packages..."
 downloading_mingw="Downloading specific MinGW GCC..."
-downloading_pidgin="Downloading Pidgn source code..."
+downloading_pidgin="Downloading $pidgin_variant source code..."
 downloading_dependencies="Downloading build dependencies..."
 downloading_ca_bundle="Downloading CA bundle..."
 extracting_mingw="Extracting MinGW GCC..."
-extracting_pidgin="Extracting Pidgin source code..."
+extracting_pidgin="Extracting $pidgin_variant source code..."
 extracting_dependencies="Extracting build dependencies..."
 
 
@@ -165,7 +191,12 @@ echo
 # Download Pidgin source tarball
 
 echo "$downloading_pidgin"
-download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+if [[ -n "$pidgin_plus_plus" ]]; then
+    plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
+    download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
+else
+    download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+fi
 echo
 
 
@@ -193,6 +224,10 @@ for build_deependency in \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
     "$mingw_gcc44_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
 ; do download "$build_deependency" "$cache"; done
+
+if [[ -n "$pidgin_plus_plus" ]]; then
+    download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
+fi
 echo
 
 
@@ -205,9 +240,10 @@ for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
 done
 
 echo "$extracting_pidgin"
-tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_version/local.mak"
-echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_version/local.mak"
+[[ -n "$pidgin_plus_plus" ]] && unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
+[[ -z "$pidgin_plus_plus" ]] && tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
+echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/local.mak"
+echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/local.mak"
 
 echo "$extracting_dependencies"
 unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"           -d "$win32/intltool_0.40.4-1_win32"
@@ -231,6 +267,9 @@ mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
 tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
 unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll" -d "$win32/$nsis/Plugins/"
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
+if [[ -n "$pidgin_plus_plus" ]]; then
+    unzip -qoj "$cache/Inetc.zip" "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
+fi
 echo
 
 
