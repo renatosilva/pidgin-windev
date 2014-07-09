@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.8
+##    Pidgin Windows Development Setup 2014.7.9
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -59,6 +59,15 @@ if [[ -n "$which_pidgin" ]]; then
     exit
 fi
 
+
+# Require MSYS 1.x
+system=$(uname -o)
+system_version=$(uname -r)
+if [[ "$system" != Msys || "$system_version" != 1.* ]]; then
+    echo "Incompatible environment: $system $system_version."
+    echo "This script must be executed under MinGW MSYS, see --help."
+    exit 1
+fi
 
 # Pidgin variant
 
