@@ -6,22 +6,22 @@
 ##    GPLv2 licensed
 ##
 ## Hi, I am supposed to set up a Windows build environment for Pidgin or
-## Pidgin++ 2.x in one single shot, suitable for building with MinGW MSYS, and
-## without the long manual steps described in the wiki documentation at
+## Pidgin++ 2.x in one single shot, suitable for building with MSYS2 or MinGW
+## MSYS, without the long manual steps described in the wiki documentation at
 ## http://developer.pidgin.im/wiki/BuildingWinPidgin.
 ##
 ## I was designed based on that guide, and I will try my best to perform what
 ## is described there, but I must say in advance you will need to manually
 ## install GnuPG and the Bonjour SDK. You will be given more details when I
-## finish. I was designed to run under MinGW MSYS with mingw-get command
-## available.
+## finish. I was designed to run under MSYS2 with pacman command available, or
+## under MinGW MSYS with mingw-get command available.
 ##
 ## I am going to create a buildbox containing specific versions of GCC, Perl and
 ## NSIS, along with Pidgin build dependencies. After running me and finishing
 ## the manual steps you should be able to build Pidgin with something like
 ## "make -f Makefile.mingw installers" or similar.
 ##
-## NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
+## NOTES: source code tarball for 2.10.9 cannot be built on MinGW MSYS without
 ## patching, or without some wget version newer than 1.12. In order to download
 ## Pidgin dependencies without security warnings, this script obtains the
 ## appropriate CA bundle from the cURL website. Finally, if you want to sign the
@@ -60,13 +60,18 @@ if [[ -n "$which_pidgin" ]]; then
 fi
 
 
-# Require MSYS 1.x
+# Require MSYS or MSYS2
 system=$(uname -o)
 system_version=$(uname -r)
-if [[ "$system" != Msys || "$system_version" != 1.* ]]; then
+if [[ "$system" != Msys || "$system_version" != [12].* ]]; then
     echo "Incompatible environment: $system $system_version."
-    echo "This script must be executed under MinGW MSYS, see --help."
+    echo "This script must be executed under MSYS2 or MinGW MSYS, see --help."
     exit 1
+else
+    case "$system_version" in
+        1.*) system="MinGW MSYS" ;;
+        2.*) system="MSYS2" ;;
+    esac
 fi
 
 # Pidgin variant
@@ -102,7 +107,7 @@ devroot="${arguments[0]}"
 [[ ! -d "$devroot" && $result  = 0 ]] && echo "No valid development root specified, see --help."
 [[ ! -d "$devroot" || $result != 0 ]] && exit
 
-# Readlink from MSYS requires a Unix path
+# Readlink from MinGW MSYS requires a Unix path
 cd "$devroot"
 devroot=$(readlink -m "$(pwd)")
 cd - > /dev/null
@@ -117,7 +122,9 @@ download() {
     else
         cert_args="--no-check-certificate"
     fi
-    wget $cert_args -nv -nc -P "$2" "$1" 2>&1 | grep -v "\->"
+    filename="${1%/download}"
+    filename="${filename##*/}"
+    wget $cert_args -nv -nc -O "$2/$filename" "$1" 2>&1 | grep -v "\->"
 }
 
 
@@ -137,9 +144,9 @@ gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 mingw_gcc44_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
 mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507-2"
-mingw_packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
+packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
-installing_packages="Installing some MSYS packages..."
+installing_packages="Installing some $system packages..."
 downloading_mingw="Downloading specific MinGW GCC..."
 downloading_pidgin="Downloading $pidgin_variant source code..."
 downloading_dependencies="Downloading build dependencies..."
@@ -154,12 +161,19 @@ extracting_dependencies="Extracting build dependencies..."
 [ -n "$path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
 
 
-# Install what is possible with MinGW automated installer
+# Install what is possible with package manager
 
 echo "$installing_packages"
-for package in $mingw_packages; do
-    echo -e "\tChecking $package..."
-    mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
+for package in $packages; do
+    if [[ "$system_version" = 1.* ]]; then
+        echo "\tChecking $package..."
+        mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
+    else
+        package="${package#msys-}"
+        printf "\tChecking $package..."
+        pacman --noconfirm --sync --needed "$package" 3> /dev/null >&3 2>&3 || printf " error"
+        echo
+    fi
 done
 echo
 
@@ -171,6 +185,7 @@ echo
 
 # Download MinGW GCC
 
+mkdir -p "$cache/$mingw"
 echo "$downloading_mingw"
 for gcc_package in \
     "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
