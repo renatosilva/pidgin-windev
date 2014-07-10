@@ -44,12 +44,13 @@
 ##
 
 
-# Parse options and which Pidgin/Pidgin++ version
-
-pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS137"
+# Parse options
 eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
+
+# Pidgin versions
+pidgin_version="2.10.9"
+plus_plus_version="2.10.9-RS137"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
@@ -60,7 +61,7 @@ if [[ -n "$which_pidgin" ]]; then
 fi
 
 
-# Require MSYS or MSYS2
+# MSYS or MSYS2 required
 system=$(uname -o)
 system_version=$(uname -r)
 if [[ "$system" != Msys || "$system_version" != [12].* ]]; then
@@ -74,8 +75,8 @@ else
     esac
 fi
 
-# Pidgin variant
 
+# Pidgin variant
 see_help="See --help for usage and options."
 if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
     echo "Unrecognized Pidgin variant: \`$for'."
@@ -93,7 +94,6 @@ fi
 
 
 # Under development
-
 if [[ "$pidgin_variant_version" = *.next ]]; then
     echo "This script is under development for the next version of $pidgin_variant following"
     echo "${pidgin_variant_version%.next} and is currently unusable. You need to use the version that"
@@ -103,7 +103,6 @@ fi
 
 
 # Development root
-
 devroot="${arguments[0]}"
 [[ $result != 0 ]] && exit
 if [[ ! -e "$devroot" ]]; then
@@ -115,38 +114,23 @@ elif [[ ! -d "$devroot" ]]; then
     exit 1
 fi
 
+
 # Readlink from MinGW MSYS requires a Unix path
 cd "$devroot"
 devroot=$(readlink -m "$(pwd)")
 cd - > /dev/null
 
 
-# Download function
-
-download() {
-    echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
-    if [[ -f "$ca_bundle" ]]; then
-        cert_args="--ca-certificate $ca_bundle"
-    else
-        cert_args="--no-check-certificate"
-    fi
-    filename="${1%/download}"
-    filename="${filename##*/}"
-    wget $cert_args -nv -nc -O "$2/$filename" "$1" 2>&1 | grep -v "\->"
-}
-
-
 # Configuration
-
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
-ca_bundle="/tmp/mozilla.pem"
-ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
 perl_version="5.10.1.5"
 perl="strawberry-perl-$perl_version"
 mingw="mingw-gcc-4.7.2"
 nsis="nsis-2.46"
 
+ca_bundle="/tmp/mozilla.pem"
+ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
 pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
@@ -164,13 +148,28 @@ extracting_pidgin="Extracting $pidgin_variant source code..."
 extracting_dependencies="Extracting build dependencies..."
 
 
-# Just print PATH setup
+# Downloads
+download() {
+    echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
+    if [[ -f "$ca_bundle" ]]; then
+        cert_args="--ca-certificate $ca_bundle"
+    else
+        cert_args="--no-check-certificate"
+    fi
+    filename="${1%/download}"
+    filename="${filename##*/}"
+    wget $cert_args -nv -nc -O "$2/$filename" "$1" 2>&1 | grep -v "\->"
+}
 
-[ -n "$path" ] && echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\"" && exit
+
+# Path configuration
+if [[ -n "$path" ]]; then
+    echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\""
+    exit
+fi
 
 
 # Install what is possible with package manager
-
 echo "$installing_packages"
 for package in $packages; do
     if [[ "$system_version" = 1.* ]]; then
@@ -185,14 +184,14 @@ for package in $packages; do
 done
 echo
 
-# Download root certificates
 
+# Download certificates
 printf "$downloading_ca_bundle\n\t"
 wget -q -O "$ca_bundle" "$ca_bundle_url" && echo "Saved to $ca_bundle."
 echo
 
-# Download MinGW GCC
 
+# Download GCC
 mkdir -p "$cache/$mingw"
 echo "$downloading_mingw"
 for gcc_package in \
@@ -220,8 +219,7 @@ for gcc_package in \
 echo
 
 
-# Download Pidgin source tarball
-
+# Download Pidgin
 echo "$downloading_pidgin"
 if [[ -n "$pidgin_plus_plus" ]]; then
     plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
@@ -232,8 +230,7 @@ fi
 echo
 
 
-# Download Pidgin build dependencies
-
+# Download dependencies
 echo "$downloading_dependencies"
 for build_deependency in \
     "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
@@ -256,57 +253,57 @@ for build_deependency in \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
     "$mingw_gcc44_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
 ; do download "$build_deependency" "$cache"; done
-
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
 fi
 echo
 
 
-# Exctract downloads
-
+# Extract GCC
 echo "$extracting_mingw"
 mkdir -p "$win32/$mingw"
 for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
     tar  --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
 done
 
+
+# Extract Pidgin
 echo "$extracting_pidgin"
 [[ -n "$pidgin_plus_plus" ]] && unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
 [[ -z "$pidgin_plus_plus" ]] && tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
 echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/local.mak"
 echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/local.mak"
 
+
+# Extract dependencies
 echo "$extracting_dependencies"
-unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"           -d "$win32/intltool_0.40.4-1_win32"
-unzip -qo  "$cache/gtk+-bundle_2.14.7-20090119_win32.zip" -d "$win32/gtk_2_0-2.14"
-unzip -qo  "$cache/gettext-tools-0.17.zip"                -d "$win32/gettext-0.17"
-unzip -qo  "$cache/gettext-runtime-0.17-1.zip"            -d "$win32/gettext-0.17"
-unzip -qo  "$cache/libxml2_2.9.0-1_win32.zip"             -d "$win32/libxml2-2.9.0"
-unzip -qo  "$cache/libxml2-dev_2.9.0-1_win32.zip"         -d "$win32/libxml2-2.9.0"
-unzip -qo  "$cache/$perl.zip"                             -d "$win32/$perl"
-unzip -qo  "$cache/$nsis.zip"                             -d "$win32"
-unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"        -d "$win32"
-unzip -qo  "$cache/enchant_1.6.0_win32.zip"               -d "$win32"
-tar  -xjf  "$cache/gtkspell-2.0.16.tar.bz2"      --directory "$win32"
+unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"                -d "$win32/intltool_0.40.4-1_win32"
+unzip -qo  "$cache/gtk+-bundle_2.14.7-20090119_win32.zip"      -d "$win32/gtk_2_0-2.14"
+unzip -qo  "$cache/gettext-tools-0.17.zip"                     -d "$win32/gettext-0.17"
+unzip -qo  "$cache/gettext-runtime-0.17-1.zip"                 -d "$win32/gettext-0.17"
+unzip -qo  "$cache/libxml2_2.9.0-1_win32.zip"                  -d "$win32/libxml2-2.9.0"
+unzip -qo  "$cache/libxml2-dev_2.9.0-1_win32.zip"              -d "$win32/libxml2-2.9.0"
+unzip -qo  "$cache/$perl.zip"                                  -d "$win32/$perl"
+unzip -qo  "$cache/$nsis.zip"                                  -d "$win32"
+unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"             -d "$win32"
+unzip -qo  "$cache/enchant_1.6.0_win32.zip"                    -d "$win32"
+unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll"  -d "$win32/$nsis/Plugins/"
+
+[[ -n "$pidgin_plus_plus" ]] && unzip -qoj "$cache/Inetc.zip"  "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
+cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
+
+mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
+tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
+tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"           --directory "$win32"
 
 for gzip_tarball in "$cache/"*".tar.gz"; do
     [[ "$gzip_tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
     bsdtar -xzf "$gzip_tarball" --directory "$win32"
 done
-
-mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
-tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
-unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll" -d "$win32/$nsis/Plugins/"
-cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
-if [[ -n "$pidgin_plus_plus" ]]; then
-    unzip -qoj "$cache/Inetc.zip" "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
-fi
 echo
 
 
 # Finishing
-
 echo "Finished setting up the build environment, remaining manual steps are:
 1. Install GnuPG and make it available from PATH
 2. Install Bonjour SDK under $win32/Bonjour_SDK
