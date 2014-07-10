@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.9
+##    Pidgin Windows Development Setup 2014.7.10
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -76,9 +76,10 @@ fi
 
 # Pidgin variant
 
+see_help="See --help for usage and options."
 if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
     echo "Unrecognized Pidgin variant: \`$for'."
-    echo "See --help for usage and options."
+    echo "$see_help"
     exit 1
 fi
 if [[ "$for" = "pidgin++" ]]; then
@@ -104,8 +105,15 @@ fi
 # Development root
 
 devroot="${arguments[0]}"
-[[ ! -d "$devroot" && $result  = 0 ]] && echo "No valid development root specified, see --help."
-[[ ! -d "$devroot" || $result != 0 ]] && exit
+[[ $result != 0 ]] && exit
+if [[ ! -e "$devroot" ]]; then
+    printf "Creating new development root at $devroot...\n\n"
+    mkdir -p "$devroot"
+elif [[ ! -d "$devroot" ]]; then
+    echo "The existing development root is not a directory: \`$devroot'."
+    echo "$see_help"
+    exit 1
+fi
 
 # Readlink from MinGW MSYS requires a Unix path
 cd "$devroot"
