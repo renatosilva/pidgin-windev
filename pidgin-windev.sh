@@ -48,7 +48,7 @@
 
 pidgin_version="2.10.9"
 plus_plus_version="2.10.9-RS137"
-eval "$(from="$0" parse-options.rb "$@"; echo result=$?)"
+eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
