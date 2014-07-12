@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.10
+##    Pidgin Windows Development Setup 2014.7.12
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -271,8 +271,8 @@ done
 echo "$extracting_pidgin"
 [[ -n "$pidgin_plus_plus" ]] && unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
 [[ -z "$pidgin_plus_plus" ]] && tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/local.mak"
-echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/local.mak"
+echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
 
 
 # Extract dependencies
