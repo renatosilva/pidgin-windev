@@ -12,9 +12,9 @@
 ##
 ## I was designed based on that guide, and I will try my best to perform what
 ## is described there, but I must say in advance you will need to manually
-## install GnuPG and the Bonjour SDK. You will be given more details when I
-## finish. I was designed to run under MSYS2 with pacman command available, or
-## under MinGW MSYS with mingw-get command available.
+## install the Bonjour SDK, and if using MinGW MSYS, also GnuPG. You will be
+## given more details when I finish. I was designed to run under MSYS2 with
+## pacman command available, or under MinGW MSYS with mingw-get.
 ##
 ## I am going to create a buildbox containing specific versions of GCC, Perl and
 ## NSIS, along with Pidgin build dependencies. After running me and finishing
@@ -302,11 +302,21 @@ for gzip_tarball in "$cache/"*".tar.gz"; do
 done
 echo
 
-
 # Finishing
-echo "Finished setting up the build environment, remaining manual steps are:
-1. Install GnuPG and make it available from PATH
-2. Install Bonjour SDK under $win32/Bonjour_SDK
-3. Add downloaded GCC, Perl and NSIS before others in your PATH by running
-   eval \$($0 $devroot --path)."
+echo "Finished, remaining manual steps are:"
+bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
+gnupg="Install GnuPG and make it available from PATH."
+path="Add downloaded GCC, Perl and NSIS before others in your PATH by running"
+eval="eval \$($0 $devroot --path)."
+
+case "$system_version" in
+2.*) echo "1. $bonjour"
+     echo "2. $path"
+     echo "   $eval"
+     ;;
+  *) echo "1. $gnupg"
+     echo "2. $bonjour"
+     echo "3. $path"
+     echo "   $eval"
+esac
 echo
