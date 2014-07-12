@@ -173,7 +173,7 @@ fi
 echo "$installing_packages"
 for package in $packages; do
     if [[ "$system_version" = 1.* ]]; then
-        echo "\tChecking $package..."
+        echo -e "\tChecking $package..."
         mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
     else
         package="${package#msys-}"
