@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.12
+##    Pidgin Windows Development Setup 2014.7.15
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -33,6 +33,8 @@
 ##     -p, --path          Print system path configuration for evaluation after
 ##                         the build environment has been created. This will
 ##                         allow you to start compilation.
+##
+##     -g, --system-gcc    Do not include custom GCC in --path.
 ##
 ##     -w, --which-pidgin  Show the Pidgin and Pidgin++ versions this script
 ##                         can handle. When specified as "the next version" this
@@ -164,7 +166,8 @@ download() {
 
 # Path configuration
 if [[ -n "$path" ]]; then
-    echo "export PATH=\"$win32/$mingw/bin:$win32/$perl/perl/bin:$win32/$nsis:$PATH\""
+    [[ -z "$system_gcc" ]] && custom_gcc="$win32/$mingw/bin:"
+    echo "export PATH=\"${custom_gcc}$win32/$perl/perl/bin:$win32/$nsis:$PATH\""
     exit
 fi
 
