@@ -295,9 +295,7 @@ unzip -qo  "$cache/$nsis.zip"                                  -d "$win32"
 unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"             -d "$win32"
 unzip -qo  "$cache/enchant_1.6.0_win32.zip"                    -d "$win32"
 unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll"  -d "$win32/$nsis/Plugins/"
-
 [[ -n "$pidgin_plus_plus" ]] && unzip -qoj "$cache/Inetc.zip"  "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
-cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 
 mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
 tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
@@ -307,6 +305,7 @@ for gzip_tarball in "$cache/"*".tar.gz"; do
     [[ "$gzip_tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
     bsdtar -xzf "$gzip_tarball" --directory "$win32"
 done
+cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
 # Finishing
