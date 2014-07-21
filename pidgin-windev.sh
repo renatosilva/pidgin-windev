@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.15
+##    Pidgin Windows Development Setup 2014.7.21
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -107,6 +107,10 @@ fi
 # Development root
 devroot="${arguments[0]}"
 [[ $result != 0 ]] && exit
+if [[ -z "$devroot" ]]; then
+    echo "A development root must be specified, see --help."
+    exit 1
+fi
 if [[ ! -e "$devroot" ]]; then
     printf "Creating new development root at $devroot...\n\n"
     mkdir -p "$devroot"
