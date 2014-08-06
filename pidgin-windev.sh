@@ -46,6 +46,10 @@
 ##
 ##     -s, --get-source    Also get the source code for Pidgin/Pidgin++ itself.
 ##
+##     -l, --link-to-me    Also create an NTFS symlink to this script under
+##                         DEVELOPMENT_ROOT/win32-dev/@script.name. This
+##                         requires administrative privileges.
+##
 
 
 # Parse options
@@ -157,6 +161,7 @@ downloading_ca_bundle="Downloading CA bundle..."
 extracting_mingw="Extracting MinGW GCC..."
 extracting_pidgin="Extracting $pidgin_variant source code..."
 extracting_dependencies="Extracting build dependencies..."
+creating_symlink="Creating symlink to this script..."
 
 
 # Functions
@@ -305,6 +310,26 @@ if [[ -n "$get_source" ]]; then
         tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
         echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+    fi
+    echo
+fi
+
+
+# Create link to this script
+if [[ -n "$link_to_me" ]]; then
+    echo "$creating_symlink"
+    filename="$(basename $BASH_SOURCE)"
+    if [[ -f "$win32/$filename" ]]; then
+        echo -e "\tIgnoring already existing file $win32/$filename."
+    else
+        cd $(dirname "$BASH_SOURCE")
+        target="$(pwd -W | tr / \\\\)\\$filename"
+        target_unix="$(pwd)/$filename"
+        cd - > /dev/null
+        cd "$win32"
+        printf "\tFrom: $win32/$filename\n\tTo: $target_unix\n\t"
+        cmd //c mklink "$filename" "$target" ">" NUL "&&" echo "NTFS" "symlink" "created."
+        cd - > /dev/null
     fi
     echo
 fi
