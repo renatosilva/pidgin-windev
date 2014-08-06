@@ -220,30 +220,32 @@ echo
 
 # Download GCC
 mkdir -p "$cache/$mingw"
-echo "$downloading_mingw"
-for gcc_package in \
-    "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
-    "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"                \
-    "$mingw_base_url/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download"                   \
-    "$mingw_base_url/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download"              \
-    "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"        \
-    "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"        \
-    "$mingw_pthreads_url/pthreads-w32-2.9.0-mingw32-pre-20110507-2-dev.tar.lzma/download"            \
-    "$mingw_pthreads_url/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download"          \
-    "$mingw_base_url/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download"                 \
-    "$mingw_base_url/mingw-rt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dev.tar.lzma/download"             \
-    "$mingw_base_url/mingw-rt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dll.tar.lzma/download"             \
-    "$mingw_base_url/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"       \
-    "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download"       \
-    "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download"         \
-    "$mingw_base_url/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download"                      \
-    "$mingw_base_url/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download"                 \
-    "$mingw_base_url/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download"  \
-    "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"       \
-    "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download"        \
-    "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"   \
-; do download "$gcc_package" "$cache/$mingw"; done
-echo
+if [[ -z "$system_gcc" ]]; then
+    echo "$downloading_mingw"
+    for gcc_package in \
+        "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
+        "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"                \
+        "$mingw_base_url/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download"                   \
+        "$mingw_base_url/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download"              \
+        "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"        \
+        "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"        \
+        "$mingw_pthreads_url/pthreads-w32-2.9.0-mingw32-pre-20110507-2-dev.tar.lzma/download"            \
+        "$mingw_pthreads_url/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download"          \
+        "$mingw_base_url/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download"                 \
+        "$mingw_base_url/mingw-rt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dev.tar.lzma/download"             \
+        "$mingw_base_url/mingw-rt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dll.tar.lzma/download"             \
+        "$mingw_base_url/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"       \
+        "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download"       \
+        "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download"         \
+        "$mingw_base_url/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download"                      \
+        "$mingw_base_url/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download"                 \
+        "$mingw_base_url/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download"  \
+        "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"       \
+        "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download"        \
+        "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"   \
+    ; do download "$gcc_package" "$cache/$mingw"; done
+    echo
+fi
 
 
 # Download Pidgin
@@ -292,13 +294,15 @@ echo
 
 
 # Extract GCC
-echo "$extracting_mingw"
 mkdir -p "$win32/$mingw"
-for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
-    echo -e "\tExtracting ${lzma_tarball##*/}..."
-    tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
-done
-echo
+if [[ -z "$system_gcc" ]]; then
+    echo "$extracting_mingw"
+    for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
+        echo -e "\tExtracting ${lzma_tarball##*/}..."
+        tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
+    done
+    echo
+fi
 
 
 # Extract Pidgin
@@ -371,13 +375,15 @@ echo -e "\tInstalling the NSIS SHA1 plugin..."
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
+
 # Finishing
 echo "Finished, remaining manual steps are:"
+[[ -z "$system_gcc" ]] && custom_gcc="yes"
 bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
 gnupg="Install GnuPG and make it available from PATH."
 sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
    you want to build the GTK+ bundle, which requires extraction of RPM packages."
-path="Add downloaded GCC, Perl and NSIS before others in your PATH by running
+path="Add downloaded ${custom_gcc:+GCC, }Perl and NSIS before others in your PATH by running
    eval \$($0 $devroot --path)."
 
 case "$system_version" in
