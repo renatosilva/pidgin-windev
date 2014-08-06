@@ -52,7 +52,7 @@ eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS137.next"
+plus_plus_version="2.10.9-RS218"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
@@ -197,6 +197,11 @@ for package in $packages; do
         echo
     fi
 done
+if [[ -n "$pidgin_plus_plus" && "$system_version" = 2.* && -z $(which 7z 2> /dev/null) ]]; then
+    printf "\tChecking p7zip..."
+    pacman --noconfirm --sync --needed p7zip 3> /dev/null >&3 2>&3 || printf " error"
+    echo
+fi
 echo
 
 
@@ -268,6 +273,7 @@ for build_dependency in \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
     "$mingw_gcc44_url/$gcc_core44.tar.gz/download"                                                   \
 ; do download "$build_dependency" "$cache"; done
+
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" "xmlstarlet"
@@ -336,17 +342,18 @@ echo
 echo "Finished, remaining manual steps are:"
 bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
 gnupg="Install GnuPG and make it available from PATH."
-path="Add downloaded GCC, Perl and NSIS before others in your PATH by running"
-eval="eval \$($0 $devroot --path)."
+sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
+   you want to build the GTK+ bundle, which requires extraction of RPM packages."
+path="Add downloaded GCC, Perl and NSIS before others in your PATH by running
+   eval \$($0 $devroot --path)."
 
 case "$system_version" in
 2.*) echo "1. $bonjour"
      echo "2. $path"
-     echo "   $eval"
+     echo
      ;;
   *) echo "1. $gnupg"
      echo "2. $bonjour"
      echo "3. $path"
-     echo "   $eval"
+     echo "${pidgin_plus_plus:+4. $sevenzip}"
 esac
-echo
