@@ -52,7 +52,7 @@ eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS137"
+plus_plus_version="2.10.9-RS137.next"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
