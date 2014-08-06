@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.7.21
+##    Pidgin Windows Development Setup 2014.8.6
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -142,6 +142,7 @@ gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 mingw_gcc44_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
 mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507-2"
+xmlstarlet_base_url="http://sourceforge.net/projects/xmlstar/files/xmlstarlet"
 packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
 installing_packages="Installing some $system packages..."
@@ -156,6 +157,7 @@ extracting_dependencies="Extracting build dependencies..."
 
 # Downloads
 download() {
+    which "$3" > /dev/null 2>&1 && return
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
     if [[ -f "$ca_bundle" ]]; then
         cert_args="--ca-certificate $ca_bundle"
@@ -171,7 +173,7 @@ download() {
 # Path configuration
 if [[ -n "$path" ]]; then
     [[ -z "$system_gcc" ]] && custom_gcc="$win32/$mingw/bin:"
-    echo "export PATH=\"${custom_gcc}$win32/$perl/perl/bin:$win32/$nsis:$PATH\""
+    echo "export PATH=\"${custom_gcc}$win32/$perl/perl/bin:$win32/$nsis:$win32:$PATH\""
     exit
 fi
 
@@ -262,6 +264,7 @@ for build_deependency in \
 ; do download "$build_deependency" "$cache"; done
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
+    download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" "xmlstarlet"
 fi
 echo
 
@@ -295,7 +298,14 @@ unzip -qo  "$cache/$nsis.zip"                                  -d "$win32"
 unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"             -d "$win32"
 unzip -qo  "$cache/enchant_1.6.0_win32.zip"                    -d "$win32"
 unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll"  -d "$win32/$nsis/Plugins/"
-[[ -n "$pidgin_plus_plus" ]] && unzip -qoj "$cache/Inetc.zip"  "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
+
+if [[ -n "$pidgin_plus_plus" ]]; then
+    unzip -qoj "$cache/Inetc.zip" "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
+    if ! which xmlstarlet > /dev/null 2>&1; then
+        unzip -qoj "$cache/xmlstarlet-1.6.0-win32.zip" "xmlstarlet-1.6.0/xml.exe" -d "$win32"
+        mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
+    fi
+fi
 
 mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
 tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
