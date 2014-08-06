@@ -241,7 +241,7 @@ echo
 
 # Download dependencies
 echo "$downloading_dependencies"
-for build_deependency in \
+for build_dependency in \
     "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
     "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
     "$pidgin_base_url/gtkspell-2.0.16.tar.bz2"                                                       \
@@ -261,7 +261,7 @@ for build_deependency in \
     "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
     "$mingw_gcc44_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
-; do download "$build_deependency" "$cache"; done
+; do download "$build_dependency" "$cache"; done
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" "xmlstarlet"
@@ -273,7 +273,7 @@ echo
 echo "$extracting_mingw"
 mkdir -p "$win32/$mingw"
 for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
-    tar  --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
+    tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
 done
 
 
