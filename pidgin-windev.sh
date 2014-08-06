@@ -44,6 +44,8 @@
 ##         --for=VARIANT   The Pidgin variant for which a build environment will
 ##                         be created, either "pidgin" (default) or "pidgin++".
 ##
+##     -s, --get-source    Also get the source code for Pidgin/Pidgin++ itself.
+##
 
 
 # Parse options
@@ -240,14 +242,16 @@ echo
 
 
 # Download Pidgin
-echo "$downloading_pidgin"
-if [[ -n "$pidgin_plus_plus" ]]; then
-    plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
-    download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
-else
-    download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+if [[ -n "$get_source" ]]; then
+    echo "$downloading_pidgin"
+    if [[ -n "$pidgin_plus_plus" ]]; then
+        plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
+        download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
+    else
+        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+    fi
+    echo
 fi
-echo
 
 
 # Download dependencies
@@ -293,15 +297,17 @@ echo
 
 
 # Extract Pidgin
-echo "$extracting_pidgin"
-if [[ -n "$pidgin_plus_plus" ]]; then
-    unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
-else
-    tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-    echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
-    echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+if [[ -n "$get_source" ]]; then
+    echo "$extracting_pidgin"
+    if [[ -n "$pidgin_plus_plus" ]]; then
+        unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
+    else
+        tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
+        echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+        echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+    fi
+    echo
 fi
-echo
 
 
 # Extract dependencies
@@ -359,3 +365,9 @@ case "$system_version" in
      echo "3. $path"
      echo "${pidgin_plus_plus:+4. $sevenzip}"
 esac
+
+if [[ -n "$get_source" ]]; then
+    echo "After these steps you should be able to build $pidgin_variant from the created"
+    echo "source code directory $devroot/pidgin-$pidgin_variant_version."
+    echo
+fi
