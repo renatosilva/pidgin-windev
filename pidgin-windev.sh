@@ -267,7 +267,7 @@ for build_dependency in \
     "$gnome_base_url/dependencies/gettext-runtime-0.17-1.zip"                                        \
     "$gnome_base_url/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
     "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
-    "$gnome_base_url/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"                                \
+    "$gnome_base_url/gtk+/2.24/gtk+-bundle_2.24.10-20120208_win32.zip"                               \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
     "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
@@ -277,6 +277,7 @@ for build_dependency in \
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" "xmlstarlet"
+    download "http://win32builder.gnome.org/packages/3.6/gettext-dev_0.18.2.1-1_win32.zip" "$cache"
 fi
 echo
 
@@ -306,7 +307,7 @@ echo
 # Extract dependencies
 echo "$extracting_dependencies"
 extract_zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
-extract_zip "$cache/gtk+-bundle_2.14.7-20090119_win32.zip"    "$win32/gtk_2_0-2.14"
+extract_zip "$cache/gtk+-bundle_2.24.10-20120208_win32.zip"   "$win32/gtk_2_0-2.24"
 extract_zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
 extract_zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
 extract_zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
@@ -319,6 +320,7 @@ extract_zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plug
 
 if [[ -n "$pidgin_plus_plus" ]]; then
     extract_zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
+    extract_zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
     if ! which xmlstarlet > /dev/null 2>&1; then
         extract_zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
         mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
