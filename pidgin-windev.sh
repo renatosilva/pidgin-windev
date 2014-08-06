@@ -287,10 +287,13 @@ echo
 
 # Extract Pidgin
 echo "$extracting_pidgin"
-[[ -n "$pidgin_plus_plus" ]] && unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
-[[ -z "$pidgin_plus_plus" ]] && tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
-echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+if [[ -n "$pidgin_plus_plus" ]]; then
+    unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
+else
+    tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
+    echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+    echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+fi
 echo
 
 
