@@ -133,6 +133,8 @@ win32="$devroot/win32-dev"
 perl_version="5.10.1.5"
 perl="strawberry-perl-$perl_version"
 mingw="mingw-gcc-4.7.2"
+gcc_core44="gcc-core-4.4.0-mingw32-dll"
+gtkspell="gtkspell-2.0.16"
 nsis="nsis-2.46"
 
 ca_bundle="/tmp/mozilla.pem"
@@ -155,7 +157,7 @@ extracting_pidgin="Extracting $pidgin_variant source code..."
 extracting_dependencies="Extracting build dependencies..."
 
 
-# Downloads
+# Functions
 download() {
     which "$3" > /dev/null 2>&1 && return
     echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
@@ -167,6 +169,10 @@ download() {
     filename="${1%/download}"
     filename="${filename##*/}"
     wget $cert_args -nv -nc -O "$2/$filename" "$1" 2>&1 | grep -v "\->"
+}
+extract_zip() {
+    echo -e "\tExtracting ${1##*/}..."
+    unzip -qo${3:+j} "$1" $3 -d "$2"
 }
 
 
@@ -244,7 +250,7 @@ echo "$downloading_dependencies"
 for build_dependency in \
     "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
     "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
-    "$pidgin_base_url/gtkspell-2.0.16.tar.bz2"                                                       \
+    "$pidgin_base_url/$gtkspell.tar.bz2"                                                             \
     "$pidgin_base_url/enchant_1.6.0_win32.zip"                                                       \
     "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz"                                                    \
     "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz"                                                      \
@@ -260,7 +266,7 @@ for build_dependency in \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
     "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
-    "$mingw_gcc44_url/gcc-core-4.4.0-mingw32-dll.tar.gz/download"                                    \
+    "$mingw_gcc44_url/$gcc_core44.tar.gz/download"                                                   \
 ; do download "$build_dependency" "$cache"; done
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
@@ -273,8 +279,10 @@ echo
 echo "$extracting_mingw"
 mkdir -p "$win32/$mingw"
 for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
+    echo -e "\tExtracting ${lzma_tarball##*/}..."
     tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
 done
+echo
 
 
 # Extract Pidgin
@@ -283,38 +291,41 @@ echo "$extracting_pidgin"
 [[ -z "$pidgin_plus_plus" ]] && tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
 echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
 echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+echo
 
 
 # Extract dependencies
 echo "$extracting_dependencies"
-unzip -qo  "$cache/intltool_0.40.4-1_win32.zip"                -d "$win32/intltool_0.40.4-1_win32"
-unzip -qo  "$cache/gtk+-bundle_2.14.7-20090119_win32.zip"      -d "$win32/gtk_2_0-2.14"
-unzip -qo  "$cache/gettext-tools-0.17.zip"                     -d "$win32/gettext-0.17"
-unzip -qo  "$cache/gettext-runtime-0.17-1.zip"                 -d "$win32/gettext-0.17"
-unzip -qo  "$cache/libxml2_2.9.0-1_win32.zip"                  -d "$win32/libxml2-2.9.0"
-unzip -qo  "$cache/libxml2-dev_2.9.0-1_win32.zip"              -d "$win32/libxml2-2.9.0"
-unzip -qo  "$cache/$perl.zip"                                  -d "$win32/$perl"
-unzip -qo  "$cache/$nsis.zip"                                  -d "$win32"
-unzip -qo  "$cache/meanwhile-1.0.2_daa3-win32.zip"             -d "$win32"
-unzip -qo  "$cache/enchant_1.6.0_win32.zip"                    -d "$win32"
-unzip -qoj "$cache/Nsisunz.zip" "nsisunz/Release/nsisunz.dll"  -d "$win32/$nsis/Plugins/"
+extract_zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
+extract_zip "$cache/gtk+-bundle_2.14.7-20090119_win32.zip"    "$win32/gtk_2_0-2.14"
+extract_zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
+extract_zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
+extract_zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
+extract_zip "$cache/libxml2-dev_2.9.0-1_win32.zip"            "$win32/libxml2-2.9.0"
+extract_zip "$cache/$perl.zip"                                "$win32/$perl"
+extract_zip "$cache/$nsis.zip"                                "$win32"
+extract_zip "$cache/meanwhile-1.0.2_daa3-win32.zip"           "$win32"
+extract_zip "$cache/enchant_1.6.0_win32.zip"                  "$win32"
+extract_zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
 
 if [[ -n "$pidgin_plus_plus" ]]; then
-    unzip -qoj "$cache/Inetc.zip" "Plugins/inetc.dll" -d "$win32/$nsis/Plugins/"
+    extract_zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
     if ! which xmlstarlet > /dev/null 2>&1; then
-        unzip -qoj "$cache/xmlstarlet-1.6.0-win32.zip" "xmlstarlet-1.6.0/xml.exe" -d "$win32"
+        extract_zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
         mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
     fi
 fi
 
-mkdir -p "$win32/gcc-core-4.4.0-mingw32-dll"
-tar -xzf "$cache/gcc-core-4.4.0-mingw32-dll.tar.gz" --directory "$win32/gcc-core-4.4.0-mingw32-dll"
-tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"           --directory "$win32"
+mkdir -p "$win32/$gcc_core44"
+echo -e "\tExtracting $gcc_core44.tar.gz..."; tar -xzf "$cache/$gcc_core44.tar.gz"       --directory "$win32/gcc-core-4.4.0-mingw32-dll"
+echo -e "\tExtracting $gtkspell.tar.bz2...";  tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"  --directory "$win32"
 
 for gzip_tarball in "$cache/"*".tar.gz"; do
     [[ "$gzip_tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
+    echo -e "\tExtracting ${gzip_tarball##*/}..."
     bsdtar -xzf "$gzip_tarball" --directory "$win32"
 done
+echo -e "\tInstalling the NSIS SHA1 plugin..."
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
