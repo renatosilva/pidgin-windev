@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.6
+##    Pidgin Windows Development Setup 2014.8.7
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -163,6 +163,14 @@ extracting_pidgin="Extracting $pidgin_variant source code..."
 extracting_dependencies="Extracting build dependencies..."
 creating_symlink="Creating symlink to this script..."
 
+if [[ -n "$pidgin_plus_plus" ]]; then
+    gtk_bundle_version="2.24"
+    gtk_bundle="gtk+-bundle_${gtk_bundle_version}.10-20120208_win32.zip"
+else
+    gtk_bundle_version="2.14"
+    gtk_bundle="gtk+-bundle_${gtk_bundle_version}.7-20090119_win32.zip"
+fi
+
 
 # Functions
 download() {
@@ -274,11 +282,11 @@ for build_dependency in \
     "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip"                                                \
     "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz"                                              \
     "$gnome_base_url/dependencies/gettext-tools-0.17.zip"                                            \
+    "$gnome_base_url/gtk+/$gtk_bundle_version/$gtk_bundle"                                           \
     "$gnome_base_url/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
     "$gnome_base_url/dependencies/gettext-runtime-0.17-1.zip"                                        \
     "$gnome_base_url/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
     "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
-    "$gnome_base_url/gtk+/2.24/gtk+-bundle_2.24.10-20120208_win32.zip"                               \
     "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
     "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
     "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
@@ -342,7 +350,7 @@ fi
 # Extract dependencies
 echo "$extracting_dependencies"
 extract_zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
-extract_zip "$cache/gtk+-bundle_2.24.10-20120208_win32.zip"   "$win32/gtk_2_0-2.24"
+extract_zip "$cache/$gtk_bundle"                              "$win32/gtk_2_0-$gtk_bundle_version"
 extract_zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
 extract_zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
 extract_zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
