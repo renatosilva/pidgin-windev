@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.7
+##    Pidgin Windows Development Setup 2014.8.14
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -58,7 +58,7 @@ eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS218"
+plus_plus_version="2.10.9-RS226"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
