@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.15
+##    Pidgin Windows Development Setup 2014.8.16
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -49,6 +49,7 @@
 ##     -n, --no-source     Do not retrieve the source code for Pidgin/Pidgin++
 ##                         itself. Use this if you already have the source code.
 ##
+##         --no-color      Disable colored output.
 ##     -l, --link-to-me    Also create an NTFS symlink to this script under
 ##                         DEVELOPMENT_ROOT/win32-dev/@script.name. This
 ##                         requires administrative privileges.
@@ -59,15 +60,29 @@
 eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
 
 
+# Output formatting
+if [[ -t 1 && -z "$no_color" ]]; then
+    red="\e[38;05;9m"
+    green="\e[0;32m"
+    blue="\e[38;05;32m"
+    yellow="\e[38;05;226m"
+    purple="\e[38;05;165m"
+    normal="\e[0m"
+fi
+header() { printf "${green}$1${normal}\n"; }
+status() { printf "$1${2:+ ${purple}$2${normal}}\n"; }
+error()  { printf "${red}Error:${normal} $1\n"; }
+alert()  { printf "${yellow}$1${normal}\n\n"; }
+
+
 # Pidgin versions
 pidgin_version="2.10.9"
 plus_plus_version="2.10.9-RS226"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
-
-    echo "Pidgin is ${pidgin_prefix}${pidgin_version%.next}"
-    echo "Pidgin++ is ${plus_plus_prefix}${plus_plus_version%.next}"
+    status "Pidgin is" "${pidgin_prefix}${pidgin_version%.next}"
+    status "Pidgin++ is" "${plus_plus_prefix}${plus_plus_version%.next}"
     exit
 fi
 
@@ -89,7 +104,7 @@ fi
 
 # Pidgin variant
 see_help="See --help for usage and options."
-[[ "$version" = devel || "$version" = devel:* ]] && latest_revision="yes"
+[[ "$version" = devel || "$version" = devel:* ]] && development_revision="yes"
 if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
     echo "Unrecognized Pidgin variant: \`$for'."
     echo "$see_help"
@@ -97,23 +112,25 @@ if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
 fi
 if [[ "$for" = "pidgin++" ]]; then
     pidgin_variant="Pidgin++"
+    [[ "$plus_plus_version" = *.next ]] && next_version="yes"
     plus_plus_version="${version:-$plus_plus_version}"
     pidgin_variant_version="$plus_plus_version"
     pidgin_plus_plus="yes"
 else
-    if [[ -n "$latest_revision" ]]; then
+    if [[ -n "$development_revision" ]]; then
         echo "Development revisions are only supported for Pidgin++."
         echo "$see_help"
         exit 1
     fi
     pidgin_variant="Pidgin"
+    [[ "$pidgin_version" = *.next ]] && next_version="yes"
     pidgin_version="${version:-$pidgin_version}"
     pidgin_variant_version="$pidgin_version"
 fi
 
 
 # Under development
-if [[ -z "$version" && "$pidgin_variant_version" = *.next ]]; then
+if [[ -n "$next_version" ]]; then
     echo "This script is under development for the next version of $pidgin_variant following"
     echo "${pidgin_variant_version%.next} and is currently unusable. You need to use the version that"
     echo "matches your desired $pidgin_variant version. For general information, see --help."
@@ -137,7 +154,8 @@ if [[ -z "$devroot" ]]; then
     exit 1
 fi
 if [[ ! -e "$devroot" ]]; then
-    printf "Creating new development root at $devroot...\n\n"
+    header "Creating new development root"
+    status "Location is" "$devroot"
     mkdir -p "$devroot"
 elif [[ ! -d "$devroot" ]]; then
     echo "The existing development root is not a directory: \`$devroot'."
@@ -172,15 +190,15 @@ mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507
 xmlstarlet_base_url="http://sourceforge.net/projects/xmlstar/files/xmlstarlet"
 packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
-installing_packages="Installing some $system packages..."
-downloading_mingw="Downloading specific MinGW GCC..."
-downloading_pidgin="Downloading $pidgin_variant source code..."
-downloading_dependencies="Downloading build dependencies..."
-downloading_ca_bundle="Downloading CA bundle..."
-extracting_mingw="Extracting MinGW GCC..."
-extracting_pidgin="Extracting $pidgin_variant source code..."
-extracting_dependencies="Extracting build dependencies..."
-creating_symlink="Creating symlink to this script..."
+installing_packages="Installing some $system packages"
+downloading_mingw="Downloading specific MinGW GCC"
+downloading_pidgin="Downloading $pidgin_variant source code"
+downloading_dependencies="Downloading build dependencies"
+downloading_ca_bundle="Downloading CA bundle"
+extracting_mingw="Extracting MinGW GCC"
+extracting_pidgin="Extracting $pidgin_variant source code"
+extracting_dependencies="Extracting build dependencies"
+creating_symlink="Creating symlink to this script"
 
 if [[ -n "$pidgin_plus_plus" ]]; then
     gtk_bundle_version="2.24"
@@ -194,7 +212,7 @@ fi
 # Functions
 download() {
     which "$3" > /dev/null 2>&1 && return
-    echo -e "\tFetching $(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')..."
+    status "Fetching" "$(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')"
     if [[ -f "$ca_bundle" ]]; then
         cert_args="--ca-certificate $ca_bundle"
     else
@@ -202,10 +220,12 @@ download() {
     fi
     filename="${1%/download}"
     filename="${filename##*/}"
-    wget $cert_args -nv -nc -O "$2/$filename" "$1" 2>&1 | grep -v "\->"
+    file="$2/$filename"
+    [[ -f "$file" && ! -s "$file" ]] && rm "$file"
+    wget $cert_args -nv -nc -O "$file" "$1" 2>&1 | grep -v "\->"
 }
 extract_zip() {
-    echo -e "\tExtracting ${1##*/}..."
+    status "Extracting" "${1##*/}"
     unzip -qo${3:+j} "$1" $3 -d "$2"
 }
 
@@ -219,28 +239,28 @@ fi
 
 
 # Install what is possible with package manager
-echo "$installing_packages"
+[[ -n "$version" ]] && alert "Using arbitrary version $version"
+header "$installing_packages"
 for package in $packages; do
     if [[ "$system_version" = 1.* ]]; then
-        echo -e "\tChecking $package..."
+        status "Checking" "$package"
         mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
     else
         package="${package#msys-}"
-        printf "\tChecking $package..."
-        pacman --noconfirm --sync --needed "$package" 3> /dev/null >&3 2>&3 || printf " error"
-        echo
+        status "Checking" "$package"
+        pacman --noconfirm --sync --needed "$package" 3> /dev/null >&3 2>&3 || error "failed checking $package"
     fi
 done
 if [[ -n "$pidgin_plus_plus" && "$system_version" = 2.* && -z $(which 7z 2> /dev/null) ]]; then
-    printf "\tChecking p7zip..."
-    pacman --noconfirm --sync --needed p7zip 3> /dev/null >&3 2>&3 || printf " error"
+    status "Checking" "p7zip"
+    pacman --noconfirm --sync --needed p7zip 3> /dev/null >&3 2>&3 || error "failed checking p7zip"
     echo
 fi
 echo
 
 
 # Download certificates
-printf "$downloading_ca_bundle\n\t"
+header "$downloading_ca_bundle"
 wget -q -O "$ca_bundle" "$ca_bundle_url" && echo "Saved to $ca_bundle."
 echo
 
@@ -248,7 +268,7 @@ echo
 # Download GCC
 mkdir -p "$cache/$mingw"
 if [[ -z "$system_gcc" ]]; then
-    echo "$downloading_mingw"
+    header "$downloading_mingw"
     for gcc_package in \
         "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
         "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"                \
@@ -277,46 +297,41 @@ fi
 
 # Download Pidgin
 if [[ -z "$no_source" ]]; then
-    echo "$downloading_pidgin"
-
-    # Pidgin++
+    header "$downloading_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
-
-        # Bazaar branch
-        if [[ -n "$latest_revision" ]]; then
+        # Pidgin++
+        if [[ -n "$development_revision" ]]; then
+            # Bazaar branch
             case "$version" in
                 devel)    revision="last:1" ;;
                 devel:*)  revision="${version#devel:}" ;;
             esac
             url="http://bazaar.launchpad.net/~renatosilva/pidgin++/trunk"
             source_directory="$devroot/pidgin++"
-
-            # Update
             if [[ -d "$source_directory" ]]; then
-
+                # Update
                 if [[ ! -d "$source_directory/.bzr" ]]; then
-                    echo -e "\tTarget directory already exists but is not a Bazaar branch:"
-                    echo -e "\t$source_directory."
+                    error "target directory already exists but is not a Bazaar branch:"
+                    echo "$source_directory"
                     exit 1
                 fi
-                printf "\tUdating already existing branch $source_directory...\n\t"
+                status "Updating already existing branch" "$source_directory"
                 bzr pull --quiet --directory "$source_directory" "$url" || exit 1
-
-            # Create
             else
-                printf "\tBranching from $url...\n\t"
+                # Create
+                status "Cloning source code repository"
+                status "From:" "$url"
+                status "To:" "$source_directory"
                 bzr branch --revision "$revision" "$url" "$source_directory" || exit 1
             fi
-
-        # Source release
         else
+            # Source release
             plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
             download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
             source_directory="$devroot/pidgin-$plus_plus_version"
         fi
-
-    # Pidgin
     else
+        # Pidgin
         download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
         source_directory="$devroot/pidgin-$pidgin_version"
     fi
@@ -325,7 +340,7 @@ fi
 
 
 # Download dependencies
-echo "$downloading_dependencies"
+header "$downloading_dependencies"
 for build_dependency in \
     "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
     "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
@@ -359,9 +374,9 @@ echo
 # Extract GCC
 mkdir -p "$win32/$mingw"
 if [[ -z "$system_gcc" ]]; then
-    echo "$extracting_mingw"
+    header "$extracting_mingw"
     for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
-        echo -e "\tExtracting ${lzma_tarball##*/}..."
+        status "Extracting" "${lzma_tarball##*/}"
         tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
     done
     echo
@@ -369,12 +384,12 @@ fi
 
 
 # Extract Pidgin
-if [[ -z "$no_source" && -z "$latest_revision" ]]; then
-    echo "$extracting_pidgin"
+if [[ -z "$no_source" && -z "$development_revision" ]]; then
+    header "$extracting_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
-        unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
+        unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot" && status "Extracted to" "$source_directory"
     else
-        tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
+        tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot" && status "Extracted to" "$source_directory"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
         echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$source_directory/${pidgin_plus_plus:+source/}local.mak"
     fi
@@ -384,17 +399,18 @@ fi
 
 # Create link to this script
 if [[ -n "$link_to_me" ]]; then
-    echo "$creating_symlink"
+    header "$creating_symlink"
     filename="$(basename $BASH_SOURCE)"
     if [[ -f "$win32/$filename" ]]; then
-        echo -e "\tIgnoring already existing file $win32/$filename."
+        status "Ignoring already existing file" "$win32/$filename"
     else
         cd $(dirname "$BASH_SOURCE")
         target="$(pwd -W | tr / \\\\)\\$filename"
         target_unix="$(pwd)/$filename"
         cd - > /dev/null
         cd "$win32"
-        printf "\tFrom: $win32/$filename\n\tTo: $target_unix\n\t"
+        status "From:" "$win32/$filename"
+        status "To:" "$target_unix"
         cmd //c mklink "$filename" "$target" ">" NUL "&&" echo "NTFS" "symlink" "created."
         cd - > /dev/null
     fi
@@ -403,7 +419,7 @@ fi
 
 
 # Extract dependencies
-echo "$extracting_dependencies"
+header "$extracting_dependencies"
 extract_zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
 extract_zip "$cache/$gtk_bundle"                              "$win32/gtk_2_0-$gtk_bundle_version"
 extract_zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
@@ -426,15 +442,15 @@ if [[ -n "$pidgin_plus_plus" ]]; then
 fi
 
 mkdir -p "$win32/$gcc_core44"
-echo -e "\tExtracting $gcc_core44.tar.gz..."; tar -xzf "$cache/$gcc_core44.tar.gz"       --directory "$win32/gcc-core-4.4.0-mingw32-dll"
-echo -e "\tExtracting $gtkspell.tar.bz2...";  tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"  --directory "$win32"
+status "Extracting" "$gcc_core44.tar.gz"; tar -xzf "$cache/$gcc_core44.tar.gz"       --directory "$win32/gcc-core-4.4.0-mingw32-dll"
+status "Extracting" "$gtkspell.tar.bz2";  tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"  --directory "$win32"
 
 for gzip_tarball in "$cache/"*".tar.gz"; do
     [[ "$gzip_tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
-    echo -e "\tExtracting ${gzip_tarball##*/}..."
+    status "Extracting" "${gzip_tarball##*/}"
     bsdtar -xzf "$gzip_tarball" --directory "$win32"
 done
-echo -e "\tInstalling the NSIS SHA1 plugin..."
+status "Installing the" "NSIS SHA1 plugin"
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
