@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.14
+##    Pidgin Windows Development Setup 2014.8.15
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -30,21 +30,24 @@
 ## Usage:
 ##     @script.name DEVELOPMENT_ROOT [options]
 ##
+##     -g, --system-gcc    Do not include custom GCC in --path.
 ##     -p, --path          Print system path configuration for evaluation after
 ##                         the build environment has been created. This will
 ##                         allow you to start compilation.
 ##
-##     -g, --system-gcc    Do not include custom GCC in --path.
-##
-##     -w, --which-pidgin  Show the Pidgin and Pidgin++ versions this script
-##                         can handle. When specified as "the next version" this
-##                         script is currently under development and unusable
-##                         for that Pidgin variant.
+##     -w, --which-pidgin  Show the minimal Pidgin and Pidgin++ versions this
+##                         script can handle. When specified as "the next
+##                         version" this script is currently under development
+##                         and unusable for that Pidgin variant.
 ##
 ##         --for=VARIANT   The Pidgin variant for which a build environment will
 ##                         be created, either "pidgin" (default) or "pidgin++".
-##
-##     -s, --get-source    Also get the source code for Pidgin/Pidgin++ itself.
+##         --version=SPEC  Specify a version other than --which-pidgin. For
+##                         Pidgin++, SPEC can also be "devel" for the latest
+##                         development revision or "devel:revision" for specific
+##                         one, Bazaar being required in either case.
+##     -n, --no-source     Do not retrieve the source code for Pidgin/Pidgin++
+##                         itself. Use this if you already have the source code.
 ##
 ##     -l, --link-to-me    Also create an NTFS symlink to this script under
 ##                         DEVELOPMENT_ROOT/win32-dev/@script.name. This
@@ -63,8 +66,8 @@ if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
 
-    echo "Pidgin: ${pidgin_prefix}${pidgin_version%.next}"
-    echo "Pidgin++: ${plus_plus_prefix}${plus_plus_version%.next}"
+    echo "Pidgin is ${pidgin_prefix}${pidgin_version%.next}"
+    echo "Pidgin++ is ${plus_plus_prefix}${plus_plus_version%.next}"
     exit
 fi
 
@@ -86,6 +89,7 @@ fi
 
 # Pidgin variant
 see_help="See --help for usage and options."
+[[ "$version" = devel || "$version" = devel:* ]] && latest_revision="yes"
 if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
     echo "Unrecognized Pidgin variant: \`$for'."
     echo "$see_help"
@@ -93,19 +97,34 @@ if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
 fi
 if [[ "$for" = "pidgin++" ]]; then
     pidgin_variant="Pidgin++"
+    plus_plus_version="${version:-$plus_plus_version}"
     pidgin_variant_version="$plus_plus_version"
     pidgin_plus_plus="yes"
 else
+    if [[ -n "$latest_revision" ]]; then
+        echo "Development revisions are only supported for Pidgin++."
+        echo "$see_help"
+        exit 1
+    fi
     pidgin_variant="Pidgin"
+    pidgin_version="${version:-$pidgin_version}"
     pidgin_variant_version="$pidgin_version"
 fi
 
 
 # Under development
-if [[ "$pidgin_variant_version" = *.next ]]; then
+if [[ -z "$version" && "$pidgin_variant_version" = *.next ]]; then
     echo "This script is under development for the next version of $pidgin_variant following"
     echo "${pidgin_variant_version%.next} and is currently unusable. You need to use the version that"
     echo "matches your desired $pidgin_variant version. For general information, see --help."
+    exit 1
+fi
+
+
+# Mutually exclusive options
+if [[ -n "$version" && -n "$no_source" ]]; then
+    echo "A version can only be specified when downloading the source code."
+    echo "$see_help"
     exit 1
 fi
 
@@ -257,13 +276,49 @@ fi
 
 
 # Download Pidgin
-if [[ -n "$get_source" ]]; then
+if [[ -z "$no_source" ]]; then
     echo "$downloading_pidgin"
+
+    # Pidgin++
     if [[ -n "$pidgin_plus_plus" ]]; then
-        plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
-        download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
+
+        # Bazaar branch
+        if [[ -n "$latest_revision" ]]; then
+            case "$version" in
+                devel)    revision="last:1" ;;
+                devel:*)  revision="${version#devel:}" ;;
+            esac
+            url="http://bazaar.launchpad.net/~renatosilva/pidgin++/trunk"
+            source_directory="$devroot/pidgin++"
+
+            # Update
+            if [[ -d "$source_directory" ]]; then
+
+                if [[ ! -d "$source_directory/.bzr" ]]; then
+                    echo -e "\tTarget directory already exists but is not a Bazaar branch:"
+                    echo -e "\t$source_directory."
+                    exit 1
+                fi
+                printf "\tUdating already existing branch $source_directory...\n\t"
+                bzr pull --quiet --directory "$source_directory" "$url" || exit 1
+
+            # Create
+            else
+                printf "\tBranching from $url...\n\t"
+                bzr branch --revision "$revision" "$url" "$source_directory" || exit 1
+            fi
+
+        # Source release
+        else
+            plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
+            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
+            source_directory="$devroot/pidgin-$plus_plus_version"
+        fi
+
+    # Pidgin
     else
         download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+        source_directory="$devroot/pidgin-$pidgin_version"
     fi
     echo
 fi
@@ -314,14 +369,14 @@ fi
 
 
 # Extract Pidgin
-if [[ -n "$get_source" ]]; then
+if [[ -z "$no_source" && -z "$latest_revision" ]]; then
     echo "$extracting_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
         unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot"
     else
         tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot"
-        echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
-        echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$devroot/pidgin-$pidgin_variant_version/${pidgin_plus_plus:+source/}local.mak"
+        echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
+        echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$source_directory/${pidgin_plus_plus:+source/}local.mak"
     fi
     echo
 fi
@@ -405,8 +460,8 @@ case "$system_version" in
      echo "${pidgin_plus_plus:+4. $sevenzip}"
 esac
 
-if [[ -n "$get_source" ]]; then
+if [[ -z "$no_source" ]]; then
     echo "After these steps you should be able to build $pidgin_variant from the created"
-    echo "source code directory $devroot/pidgin-$pidgin_variant_version."
+    echo "source code directory $source_directory."
     echo
 fi
