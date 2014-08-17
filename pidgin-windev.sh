@@ -22,23 +22,23 @@
 ## "make -f Makefile.mingw installers" or similar.
 ##
 ## NOTES: source code tarball for 2.10.9 cannot be built on MinGW MSYS without
-## patching, or without some wget version newer than 1.12. In order to download
-## Pidgin dependencies without security warnings, this script obtains the
-## appropriate CA bundle from the cURL website. Finally, if you want to sign the
-## installers, you will need to follow the manual instructions.
+## patching, or without some wget version newer than 1.12. Also, if you want to
+## sign the installers, you will need to follow the manual instructions.
 ##
 ## Usage:
-##     @script.name DEVELOPMENT_ROOT [options]
+##     @script.name [options] DEVELOPMENT_ROOT
 ##
 ##     -g, --system-gcc    Do not include custom GCC in --path.
 ##     -p, --path          Print system path configuration for evaluation after
 ##                         the build environment has been created. This will
 ##                         allow you to start compilation.
 ##
-##     -w, --which-pidgin  Show the minimal Pidgin and Pidgin++ versions this
-##                         script can handle. When specified as "the next
-##                         version" this script is currently under development
-##                         and unusable for that Pidgin variant.
+##     -w, --which-pidgin  Show the minimum Pidgin and Pidgin++ versions this
+##                         script creates an environment for. Newer versions
+##                         will also compile if not requiring any environment
+##                         changes. When specified as "the next version" this
+##                         script is currently under development and unusable
+##                         for that Pidgin variant.
 ##
 ##         --for=VARIANT   The Pidgin variant for which a build environment will
 ##                         be created, either "pidgin" (default) or "pidgin++".
@@ -49,7 +49,7 @@
 ##     -n, --no-source     Do not retrieve the source code for Pidgin/Pidgin++
 ##                         itself. Use this if you already have the source code.
 ##
-##         --no-color      Disable colored output.
+##     -c, --no-color      Disable colored output.
 ##     -l, --link-to-me    Also create an NTFS symlink to this script under
 ##                         DEVELOPMENT_ROOT/win32-dev/@script.name. This
 ##                         requires administrative privileges.
@@ -69,10 +69,10 @@ if [[ -t 1 && -z "$no_color" ]]; then
     purple="\e[38;05;165m"
     normal="\e[0m"
 fi
-header() { printf "${green}$1${normal}\n"; }
-status() { printf "$1${2:+ ${purple}$2${normal}}\n"; }
-error()  { printf "${red}Error:${normal} $1\n"; }
-alert()  { printf "${yellow}$1${normal}\n\n"; }
+step() { printf "${green}$1${normal}\n"; }
+info() { printf "$1${2:+ ${purple}$2${normal}}\n"; }
+warn() { printf "${1:+${yellow}Warning:${normal} $1}\n"; }
+oops() { printf "${red}Error:${normal} $1\n"; }
 
 
 # Pidgin versions
@@ -81,25 +81,20 @@ plus_plus_version="2.10.9-RS226"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
-    status "Pidgin is" "${pidgin_prefix}${pidgin_version%.next}"
-    status "Pidgin++ is" "${plus_plus_prefix}${plus_plus_version%.next}"
+    info "Pidgin is" "${pidgin_prefix}${pidgin_version%.next}"
+    info "Pidgin++ is" "${plus_plus_prefix}${plus_plus_version%.next}"
     exit
 fi
 
 
 # MSYS or MSYS2 required
-system=$(uname -o)
-system_version=$(uname -r)
-if [[ "$system" != Msys || "$system_version" != [12].* ]]; then
-    echo "Incompatible environment: $system $system_version."
-    echo "This script must be executed under MSYS2 or MinGW MSYS, see --help."
-    exit 1
-else
-    case "$system_version" in
-        1.*) system="MinGW MSYS" ;;
-        2.*) system="MSYS2" ;;
-    esac
-fi
+case $(uname -or) in
+    1.*Msys) system="MSYS1" ;;
+    2.*Msys) system="MSYS2" ;;
+    *) echo "Incompatible environment: $(uname -o) $(uname -r)."
+       echo "This script must be executed under MSYS2 or MinGW MSYS, see --help."
+       exit 1
+esac
 
 
 # Pidgin variant
@@ -154,8 +149,9 @@ if [[ -z "$devroot" ]]; then
     exit 1
 fi
 if [[ ! -e "$devroot" ]]; then
-    header "Creating new development root"
-    status "Location is" "$devroot"
+    step "Creating new development root"
+    info "Location:" "$devroot"
+    info
     mkdir -p "$devroot"
 elif [[ ! -d "$devroot" ]]; then
     echo "The existing development root is not a directory: \`$devroot'."
@@ -180,8 +176,6 @@ gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gtkspell="gtkspell-2.0.16"
 nsis="nsis-2.46"
 
-ca_bundle="/tmp/mozilla.pem"
-ca_bundle_url="http://curl.haxx.se/ca/cacert.pem"
 pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries/win32"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
@@ -194,7 +188,6 @@ installing_packages="Installing some $system packages"
 downloading_mingw="Downloading specific MinGW GCC"
 downloading_pidgin="Downloading $pidgin_variant source code"
 downloading_dependencies="Downloading build dependencies"
-downloading_ca_bundle="Downloading CA bundle"
 extracting_mingw="Extracting MinGW GCC"
 extracting_pidgin="Extracting $pidgin_variant source code"
 extracting_dependencies="Extracting build dependencies"
@@ -210,23 +203,48 @@ fi
 
 
 # Functions
+available() {
+    which "$1" > /dev/null 2>&1
+    return $?
+}
+
 download() {
-    which "$3" > /dev/null 2>&1 && return
-    status "Fetching" "$(echo $1 | sed 's/\/download$//' | awk -F / '{ print $NF }')"
-    if [[ -f "$ca_bundle" ]]; then
-        cert_args="--ca-certificate $ca_bundle"
-    else
-        cert_args="--no-check-certificate"
-    fi
+    error_handler="$3"
+    available "$4" && return
     filename="${1%/download}"
     filename="${filename##*/}"
     file="$2/$filename"
+    info "Fetching" "$filename"
     [[ -f "$file" && ! -s "$file" ]] && rm "$file"
-    wget $cert_args -nv -nc -O "$file" "$1" 2>&1 | grep -v "\->"
+    [[ "$system" = MSYS1 ]] && cert_args="--no-check-certificate"
+    [[ ! -e "$file" ]] && { wget $cert_args --quiet --output-document "$file" "$1" || ${error_handler:-oops} "failed downloading from $1"; }
 }
-extract_zip() {
-    status "Extracting" "${1##*/}"
-    unzip -qo${3:+j} "$1" $3 -d "$2"
+
+extract() {
+    format="$1"
+    compressed="$2"
+    directory="$3"
+    file="$4"
+    compressed_name="${compressed##*/}"
+    info "Extracting" "$compressed_name"
+    case "$format" in
+        bsdtar)  bsdtar -xzf "$compressed" --directory "$directory" ;;
+        zip)     unzip -qo${file:+j} "$compressed" $file -d "$directory" ;;
+        lzma)    tar --lzma -xf "$compressed" --directory "$directory" ;;
+        gzip)    tar -xzf "$compressed" --directory "$directory" ;;
+        bzip2)   tar -xjf "$compressed" --directory "$directory" ;;
+    esac
+}
+
+install() {
+    package="$1"
+    case "$system" in
+    MSYS1) info "Checking" "$package"
+           mingw-get install "$package" 2> /dev/null || oops "failed installing $package" ;;
+    MSYS2) package="${package#msys-}"
+           info "Checking" "$package"
+           pacman --noconfirm --sync --needed "$package" > /dev/null 2>&1 || oops "failed installing $package" ;;
+    esac
 }
 
 
@@ -239,36 +257,16 @@ fi
 
 
 # Install what is possible with package manager
-[[ -n "$version" ]] && alert "Using arbitrary version $version"
-header "$installing_packages"
-for package in $packages; do
-    if [[ "$system_version" = 1.* ]]; then
-        status "Checking" "$package"
-        mingw-get install "$package" 2>&1 | grep -v 'installed' | grep -i 'error'
-    else
-        package="${package#msys-}"
-        status "Checking" "$package"
-        pacman --noconfirm --sync --needed "$package" 3> /dev/null >&3 2>&3 || error "failed checking $package"
-    fi
-done
-if [[ -n "$pidgin_plus_plus" && "$system_version" = 2.* && -z $(which 7z 2> /dev/null) ]]; then
-    status "Checking" "p7zip"
-    pacman --noconfirm --sync --needed p7zip 3> /dev/null >&3 2>&3 || error "failed checking p7zip"
-    echo
-fi
-echo
-
-
-# Download certificates
-header "$downloading_ca_bundle"
-wget -q -O "$ca_bundle" "$ca_bundle_url" && echo "Saved to $ca_bundle."
+step "$installing_packages"
+for package in $packages; do install "$package"; done
+[[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]] && ! available 7z && install "p7zip"
 echo
 
 
 # Download GCC
 mkdir -p "$cache/$mingw"
 if [[ -z "$system_gcc" ]]; then
-    header "$downloading_mingw"
+    step "$downloading_mingw"
     for gcc_package in \
         "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
         "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"                \
@@ -297,7 +295,7 @@ fi
 
 # Download Pidgin
 if [[ -z "$no_source" ]]; then
-    header "$downloading_pidgin"
+    step "$downloading_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
         # Pidgin++
         if [[ -n "$development_revision" ]]; then
@@ -311,28 +309,28 @@ if [[ -z "$no_source" ]]; then
             if [[ -d "$source_directory" ]]; then
                 # Update
                 if [[ ! -d "$source_directory/.bzr" ]]; then
-                    error "target directory already exists but is not a Bazaar branch:"
-                    echo "$source_directory"
-                    exit 1
+                    warn "target directory already exists but is not a Bazaar branch:"
+                    info "$source_directory"
+                else
+                    info "Updating already existing Bazaar repository" "$source_directory"
+                    bzr pull --quiet --directory "$source_directory" "$url" || warn "failed updating repository"
                 fi
-                status "Updating already existing branch" "$source_directory"
-                bzr pull --quiet --directory "$source_directory" "$url" || exit 1
             else
                 # Create
-                status "Cloning source code repository"
-                status "From:" "$url"
-                status "To:" "$source_directory"
-                bzr branch --revision "$revision" "$url" "$source_directory" || exit 1
+                info "Cloning Bazaar repository"
+                info "From:" "$url"
+                info "Into:" "$source_directory"
+                bzr branch --revision "$revision" "$url" "$source_directory" || warn "failed cloning repository"
             fi
         else
             # Source release
             plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
-            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache"
+            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache" warn
             source_directory="$devroot/pidgin-$plus_plus_version"
         fi
     else
         # Pidgin
-        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache"
+        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache" warn
         source_directory="$devroot/pidgin-$pidgin_version"
     fi
     echo
@@ -340,7 +338,7 @@ fi
 
 
 # Download dependencies
-header "$downloading_dependencies"
+step "$downloading_dependencies"
 for build_dependency in \
     "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
     "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
@@ -365,7 +363,7 @@ for build_dependency in \
 
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
-    download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" "xmlstarlet"
+    download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" oops xmlstarlet
     download "http://win32builder.gnome.org/packages/3.6/gettext-dev_0.18.2.1-1_win32.zip" "$cache"
 fi
 echo
@@ -374,10 +372,9 @@ echo
 # Extract GCC
 mkdir -p "$win32/$mingw"
 if [[ -z "$system_gcc" ]]; then
-    header "$extracting_mingw"
-    for lzma_tarball in "$cache/$mingw/"*".tar.lzma"; do
-        status "Extracting" "${lzma_tarball##*/}"
-        tar --lzma -xf "$lzma_tarball" --directory "$win32/$mingw"
+    step "$extracting_mingw"
+    for tarball in "$cache/$mingw/"*".tar.lzma"; do
+        extract lzma "$tarball" "$win32/$mingw"
     done
     echo
 fi
@@ -385,11 +382,11 @@ fi
 
 # Extract Pidgin
 if [[ -z "$no_source" && -z "$development_revision" ]]; then
-    header "$extracting_pidgin"
+    step "$extracting_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
-        unzip -qo "$cache/Pidgin $plus_plus_version Source.zip" -d "$devroot" && status "Extracted to" "$source_directory"
+        extract zip "$cache/Pidgin $plus_plus_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
     else
-        tar -xjf "$cache/pidgin-$pidgin_version.tar.bz2" --directory "$devroot" && status "Extracted to" "$source_directory"
+        extract bzip2 "$cache/pidgin-$pidgin_version.tar.bz2" "$devroot" && info "Extracted to" "$source_directory"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
         echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$source_directory/${pidgin_plus_plus:+source/}local.mak"
     fi
@@ -399,18 +396,18 @@ fi
 
 # Create link to this script
 if [[ -n "$link_to_me" ]]; then
-    header "$creating_symlink"
+    step "$creating_symlink"
     filename="$(basename $BASH_SOURCE)"
     if [[ -f "$win32/$filename" ]]; then
-        status "Ignoring already existing file" "$win32/$filename"
+        info "Ignoring already existing file" "$win32/$filename"
     else
         cd $(dirname "$BASH_SOURCE")
         target="$(pwd -W | tr / \\\\)\\$filename"
         target_unix="$(pwd)/$filename"
         cd - > /dev/null
         cd "$win32"
-        status "From:" "$win32/$filename"
-        status "To:" "$target_unix"
+        info "From:" "$win32/$filename"
+        info "To:" "$target_unix"
         cmd //c mklink "$filename" "$target" ">" NUL "&&" echo "NTFS" "symlink" "created."
         cd - > /dev/null
     fi
@@ -419,44 +416,50 @@ fi
 
 
 # Extract dependencies
-header "$extracting_dependencies"
-extract_zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
-extract_zip "$cache/$gtk_bundle"                              "$win32/gtk_2_0-$gtk_bundle_version"
-extract_zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
-extract_zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
-extract_zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
-extract_zip "$cache/libxml2-dev_2.9.0-1_win32.zip"            "$win32/libxml2-2.9.0"
-extract_zip "$cache/$perl.zip"                                "$win32/$perl"
-extract_zip "$cache/$nsis.zip"                                "$win32"
-extract_zip "$cache/meanwhile-1.0.2_daa3-win32.zip"           "$win32"
-extract_zip "$cache/enchant_1.6.0_win32.zip"                  "$win32"
-extract_zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
+step "$extracting_dependencies"
+extract zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
+extract zip "$cache/$gtk_bundle"                              "$win32/gtk_2_0-$gtk_bundle_version"
+extract zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
+extract zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
+extract zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
+extract zip "$cache/libxml2-dev_2.9.0-1_win32.zip"            "$win32/libxml2-2.9.0"
+extract zip "$cache/$perl.zip"                                "$win32/$perl"
+extract zip "$cache/$nsis.zip"                                "$win32"
+extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip"           "$win32"
+extract zip "$cache/enchant_1.6.0_win32.zip"                  "$win32"
+extract zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
 
 if [[ -n "$pidgin_plus_plus" ]]; then
-    extract_zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
-    extract_zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
-    if ! which xmlstarlet > /dev/null 2>&1; then
-        extract_zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
+    extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
+    extract zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
+    if ! available xmlstarlet; then
+        extract zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
         mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
     fi
 fi
 
 mkdir -p "$win32/$gcc_core44"
-status "Extracting" "$gcc_core44.tar.gz"; tar -xzf "$cache/$gcc_core44.tar.gz"       --directory "$win32/gcc-core-4.4.0-mingw32-dll"
-status "Extracting" "$gtkspell.tar.bz2";  tar -xjf "$cache/gtkspell-2.0.16.tar.bz2"  --directory "$win32"
+extract gzip "$cache/$gcc_core44.tar.gz" "$win32/gcc-core-4.4.0-mingw32-dll"
+extract bzip2 "$cache/gtkspell-2.0.16.tar.bz2" "$win32"
 
-for gzip_tarball in "$cache/"*".tar.gz"; do
-    [[ "$gzip_tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
-    status "Extracting" "${gzip_tarball##*/}"
-    bsdtar -xzf "$gzip_tarball" --directory "$win32"
+for tarball in "$cache/"*".tar.gz"; do
+    [[ "$tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
+    extract bsdtar "$tarball" "$win32"
 done
-status "Installing the" "NSIS SHA1 plugin"
+info "Installing" "the NSIS SHA1 plugin"
 cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 echo
 
 
 # Finishing
-echo "Finished, remaining manual steps are:"
+if [[ -n "$no_source" ]]; then
+    echo "Finished, remaining manual steps are:"
+else
+    echo "Finished, below are the remaining manual steps. After these you should be able"
+    echo "to build $pidgin_variant from the created source code directory."
+    echo
+fi
+
 [[ -z "$system_gcc" ]] && custom_gcc="yes"
 bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
 gnupg="Install GnuPG and make it available from PATH."
@@ -465,19 +468,12 @@ sevenzip="Install 7-Zip and make it available from PATH. This step is only requi
 path="Add downloaded ${custom_gcc:+GCC, }Perl and NSIS before others in your PATH by running
    eval \$($0 $devroot --path)."
 
-case "$system_version" in
-2.*) echo "1. $bonjour"
-     echo "2. $path"
-     echo
-     ;;
-  *) echo "1. $gnupg"
-     echo "2. $bonjour"
-     echo "3. $path"
-     echo "${pidgin_plus_plus:+4. $sevenzip}"
+case "$system" in
+MSYS2) echo "1. $bonjour"
+       echo "2. $path"
+       echo ;;
+MSYS1) echo "1. $gnupg"
+       echo "2. $bonjour"
+       echo "3. $path"
+       echo "${pidgin_plus_plus:+4. $sevenzip}" ;;
 esac
-
-if [[ -z "$no_source" ]]; then
-    echo "After these steps you should be able to build $pidgin_variant from the created"
-    echo "source code directory $source_directory."
-    echo
-fi
