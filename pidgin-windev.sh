@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.16
+##    Pidgin Windows Development Setup 2014.8.17
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -18,8 +18,8 @@
 ##
 ## I am going to create a buildbox containing specific versions of GCC, Perl and
 ## NSIS, along with Pidgin build dependencies. After running me and finishing
-## the manual steps you should be able to build Pidgin with something like
-## "make -f Makefile.mingw installers" or similar.
+## the manual steps you can configure system path with --path and then be able
+## to build Pidgin (Pidgin++ configures path automatically).
 ##
 ## NOTES: source code tarball for 2.10.9 cannot be built on MinGW MSYS without
 ## patching, or without some wget version newer than 1.12. Also, if you want to
@@ -460,20 +460,15 @@ else
     echo
 fi
 
-[[ -z "$system_gcc" ]] && custom_gcc="yes"
 bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
 gnupg="Install GnuPG and make it available from PATH."
 sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
    you want to build the GTK+ bundle, which requires extraction of RPM packages."
-path="Add downloaded ${custom_gcc:+GCC, }Perl and NSIS before others in your PATH by running
-   eval \$($0 $devroot --path)."
 
 case "$system" in
 MSYS2) echo "1. $bonjour"
-       echo "2. $path"
        echo ;;
 MSYS1) echo "1. $gnupg"
        echo "2. $bonjour"
-       echo "3. $path"
-       echo "${pidgin_plus_plus:+4. $sevenzip}" ;;
+       echo "${pidgin_plus_plus:+3. $sevenzip}" ;;
 esac
