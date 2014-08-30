@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.17
+##    Pidgin Windows Development Setup 2014.8.29
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -106,11 +106,10 @@ if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
     exit 1
 fi
 if [[ "$for" = "pidgin++" ]]; then
-    pidgin_variant="Pidgin++"
-    [[ "$plus_plus_version" = *.next ]] && next_version="yes"
-    plus_plus_version="${version:-$plus_plus_version}"
-    pidgin_variant_version="$plus_plus_version"
     pidgin_plus_plus="yes"
+    pidgin_variant="Pidgin++"
+    pidgin_variant_version="${version:-$plus_plus_version}"
+    [[ "$plus_plus_version" = *.next ]] && next_plus_plus="yes"
 else
     if [[ -n "$development_revision" ]]; then
         echo "Development revisions are only supported for Pidgin++."
@@ -118,18 +117,26 @@ else
         exit 1
     fi
     pidgin_variant="Pidgin"
-    [[ "$pidgin_version" = *.next ]] && next_version="yes"
-    pidgin_version="${version:-$pidgin_version}"
-    pidgin_variant_version="$pidgin_version"
+    pidgin_variant_version="${version:-$pidgin_version}"
+    [[ "$pidgin_version" = *.next ]] && next_pidgin="yes"
 fi
 
 
 # Under development
-if [[ -n "$next_version" ]]; then
-    echo "This script is under development for the next version of $pidgin_variant following"
-    echo "${pidgin_variant_version%.next} and is currently unusable. You need to use the version that"
-    echo "matches your desired $pidgin_variant version. For general information, see --help."
-    exit 1
+if [[ -z "$no_source" ]]; then
+    if [[ -n "$next_pidgin" ]]; then
+        echo "This script is under development for the next version of Pidgin following"
+        echo "${pidgin_version%.next} and currently can only create a build environment for some specific"
+        echo "development revision from the source code repository. You need to either"
+        echo "specify --no-source or use a previous version of this script."
+        exit 1
+    elif [[ -n "$next_plus_plus" && "$version" != devel ]]; then
+        echo "This script is under development for the next version of Pidgin++ following"
+        echo "${plus_plus_version%.next} and currently can only create a build environment for the"
+        echo "latest development revision from source code repository. You need to specify"
+        echo "either --version=devel or --no-source."
+        exit 1
+    fi
 fi
 
 
@@ -324,14 +331,14 @@ if [[ -z "$no_source" ]]; then
             fi
         else
             # Source release
-            plus_plus_milestone=$(echo "$plus_plus_version" | tr [:upper:] [:lower:])
-            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $plus_plus_version Source.zip" "$cache" warn
-            source_directory="$devroot/pidgin-$plus_plus_version"
+            plus_plus_milestone=$(echo "$pidgin_variant_version" | tr [:upper:] [:lower:])
+            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $pidgin_variant_version Source.zip" "$cache" warn
+            source_directory="$devroot/pidgin-$pidgin_variant_version"
         fi
     else
         # Pidgin
-        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_version.tar.bz2" "$cache" warn
-        source_directory="$devroot/pidgin-$pidgin_version"
+        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_variant_version.tar.bz2" "$cache" warn
+        source_directory="$devroot/pidgin-$pidgin_variant_version"
     fi
     echo
 fi
@@ -384,9 +391,9 @@ fi
 if [[ -z "$no_source" && -z "$development_revision" ]]; then
     step "$extracting_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
-        extract zip "$cache/Pidgin $plus_plus_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
+        extract zip "$cache/Pidgin $pidgin_variant_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
     else
-        extract bzip2 "$cache/pidgin-$pidgin_version.tar.bz2" "$devroot" && info "Extracted to" "$source_directory"
+        extract bzip2 "$cache/pidgin-$pidgin_variant_version.tar.bz2" "$devroot" && info "Extracted to" "$source_directory"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
         echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$source_directory/${pidgin_plus_plus:+source/}local.mak"
     fi
