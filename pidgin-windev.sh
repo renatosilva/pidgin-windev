@@ -36,9 +36,7 @@
 ##     -w, --which-pidgin  Show the minimum Pidgin and Pidgin++ versions this
 ##                         script creates an environment for. Newer versions
 ##                         will also compile if not requiring any environment
-##                         changes. When specified as "the next version" this
-##                         script is currently under development and unusable
-##                         for that Pidgin variant.
+##                         changes.
 ##
 ##         --for=VARIANT   The Pidgin variant for which a build environment will
 ##                         be created, either "pidgin" (default) or "pidgin++".
