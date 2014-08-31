@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.29
+##    Pidgin Windows Development Setup 2014.8.31
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -77,7 +77,7 @@ oops() { printf "${red}Error:${normal} $1\n"; }
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS226"
+plus_plus_version="2.10.9-RS243"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
@@ -370,6 +370,7 @@ for build_dependency in \
 
 if [[ -n "$pidgin_plus_plus" ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
+    download "https://github.com/vslavik/winsparkle/releases/download/v0.3/WinSparkle-0.3.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" oops xmlstarlet
     download "http://win32builder.gnome.org/packages/3.6/gettext-dev_0.18.2.1-1_win32.zip" "$cache"
 fi
@@ -437,6 +438,7 @@ extract zip "$cache/enchant_1.6.0_win32.zip"                  "$win32"
 extract zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
 
 if [[ -n "$pidgin_plus_plus" ]]; then
+    extract zip "$cache/WinSparkle-0.3.zip" "$win32"
     extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
     extract zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
     if ! available xmlstarlet; then
