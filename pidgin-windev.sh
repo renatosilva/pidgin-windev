@@ -480,5 +480,6 @@ MSYS2) echo "1. $bonjour"
        echo ;;
 MSYS1) echo "1. $gnupg"
        echo "2. $bonjour"
-       echo "${pidgin_plus_plus:+3. $sevenzip}" ;;
+       echo "${pidgin_plus_plus:+3. $sevenzip}"
+       echo ;;
 esac
