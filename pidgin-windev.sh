@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.31
+##    Pidgin Windows Development Setup 2014.8.2
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -12,9 +12,10 @@
 ##
 ## I was designed based on that guide, and I will try my best to perform what
 ## is described there, but I must say in advance you will need to manually
-## install the Bonjour SDK, and if using MinGW MSYS, also GnuPG. You will be
-## given more details when I finish. I was designed to run under MSYS2 with
-## pacman command available, or under MinGW MSYS with mingw-get.
+## install the Bonjour SDK if you want to enable such protocol, and also GnuPG
+## if using MinGW MSYS. You will be given more details when I finish. I was
+## designed to run under MSYS2 with the pacman command available, or under MinGW
+## MSYS with mingw-get.
 ##
 ## I am going to create a buildbox containing specific versions of GCC, Perl and
 ## NSIS, along with Pidgin build dependencies. After running me and finishing
@@ -75,7 +76,7 @@ oops() { printf "${red}Error:${normal} $1\n"; }
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS243"
+plus_plus_version="2.10.9-RS245"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
@@ -467,8 +468,10 @@ else
     echo
 fi
 
-bonjour="Install Bonjour SDK under $win32/Bonjour_SDK."
 gnupg="Install GnuPG and make it available from PATH."
+bonjour="Install the Bonjour SDK under $win32/Bonjour_SDK.${pidgin_plus_plus:+
+   This is only required if you want to enable the Bonjour protocol, otherwise
+   you can tell the build script of Pidgin++ to disable it.}"
 sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
    you want to build the GTK+ bundle, which requires extraction of RPM packages."
 
