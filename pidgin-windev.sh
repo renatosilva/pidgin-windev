@@ -477,10 +477,8 @@ sevenzip="Install 7-Zip and make it available from PATH. This step is only requi
    you want to build the GTK+ bundle, which requires extraction of RPM packages."
 
 case "$system" in
-MSYS2) echo "1. $bonjour"
-       echo ;;
-MSYS1) echo "1. $gnupg"
-       echo "2. $bonjour"
-       echo "${pidgin_plus_plus:+3. $sevenzip}"
-       echo ;;
+MSYS2) printf "1. $bonjour\n\n" ;;
+MSYS1) printf "1. $gnupg\n"
+       printf "2. $bonjour\n"
+       printf "${pidgin_plus_plus:+3. $sevenzip\n}\n" ;;
 esac
