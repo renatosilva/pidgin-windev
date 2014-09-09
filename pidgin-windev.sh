@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.8.2
+##    Pidgin Windows Development Setup 2014.9.9
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -169,6 +169,7 @@ fi
 # Readlink from MinGW MSYS requires a Unix path
 cd "$devroot"
 devroot=$(readlink -m "$(pwd)")
+[[ $? != 0 ]] && exit 1
 cd - > /dev/null
 
 
