@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.9.9
+##    Pidgin Windows Development Setup 2014.9.12
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -56,7 +56,8 @@
 
 
 # Parse options
-eval "$(from="$0" easyoptions.rb "$@"; echo result=$?)"
+source easyoptions
+result=$?
 
 
 # Output formatting
