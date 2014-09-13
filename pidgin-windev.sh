@@ -333,8 +333,8 @@ if [[ -z "$no_source" ]]; then
         else
             # Source release
             plus_plus_milestone=$(echo "$pidgin_variant_version" | tr [:upper:] [:lower:])
-            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin $pidgin_variant_version Source.zip" "$cache" warn
-            source_directory="$devroot/pidgin-$pidgin_variant_version"
+            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin++ $pidgin_variant_version Source.zip" "$cache" warn
+            source_directory="$devroot/pidgin++_$pidgin_variant_version"
         fi
     else
         # Pidgin
@@ -393,7 +393,7 @@ fi
 if [[ -z "$no_source" && -z "$development_revision" ]]; then
     step "$extracting_pidgin"
     if [[ -n "$pidgin_plus_plus" ]]; then
-        extract zip "$cache/Pidgin $pidgin_variant_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
+        extract zip "$cache/Pidgin++ $pidgin_variant_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
     else
         extract bzip2 "$cache/pidgin-$pidgin_variant_version.tar.bz2" "$devroot" && info "Extracted to" "$source_directory"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
