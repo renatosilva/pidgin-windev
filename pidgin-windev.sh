@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.9.13
+##    Pidgin Windows Development Setup 2014.9.15
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -101,7 +101,7 @@ esac
 see_help="See --help for usage and options."
 [[ "$version" = devel || "$version" = devel:* ]] && development_revision="yes"
 if [[ -n "$for" && "$for" != "pidgin" && "$for" != "pidgin++" ]]; then
-    echo "Unrecognized Pidgin variant: \`$for'."
+    echo "Unrecognized Pidgin variant \"$for\"."
     echo "$see_help"
     exit 1
 fi
@@ -161,7 +161,7 @@ if [[ ! -e "$devroot" ]]; then
     info
     mkdir -p "$devroot"
 elif [[ ! -d "$devroot" ]]; then
-    echo "The existing development root is not a directory: \`$devroot'."
+    echo "The existing development root is not a directory: \"$devroot\"."
     echo "$see_help"
     exit 1
 fi
