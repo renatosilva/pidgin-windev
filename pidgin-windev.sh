@@ -267,7 +267,9 @@ fi
 # Install what is possible with package manager
 step "$installing_packages"
 for package in $packages; do install "$package"; done
-[[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]] && ! available 7z && install "p7zip"
+if [[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]]; then
+    ! available 7z && install "p7zip"
+    install "intltool"
 echo
 
 
