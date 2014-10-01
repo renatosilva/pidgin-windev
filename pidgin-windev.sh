@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.9.15
+##    Pidgin Windows Development Setup 2014.10.1
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -29,7 +29,7 @@
 ## Usage:
 ##     @script.name [options] DEVELOPMENT_ROOT
 ##
-##     -g, --system-gcc    Do not include custom GCC in --path.
+##     -g, --system-gcc    Disable download of custom GCC and its use in --path.
 ##     -p, --path          Print system path configuration for evaluation after
 ##                         the build environment has been created. This will
 ##                         allow you to start compilation.
