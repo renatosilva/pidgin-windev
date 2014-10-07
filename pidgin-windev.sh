@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.10.1
+##    Pidgin Windows Development Setup 2014.10.7
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -77,7 +77,7 @@ oops() { printf "${red}Error:${normal} $1\n"; }
 
 # Pidgin versions
 pidgin_version="2.10.9"
-plus_plus_version="2.10.9-RS243.next"
+plus_plus_version="14.1"
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
