@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version="2014.4.12"
-pidgin_version="2.10.9"
+version="2014.10.7"
+pidgin_version="2.10.9.next"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
