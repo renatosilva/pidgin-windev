@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.10.7
+##    Pidgin Windows Development Setup 2014.10.8
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -270,6 +270,7 @@ for package in $packages; do install "$package"; done
 if [[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]]; then
     ! available 7z && install "p7zip"
     install "intltool"
+fi
 echo
 
 
