@@ -1,30 +1,30 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.10.8
+##    Pidgin Windows Development Setup 2014.10.12
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
-## Hi, I am supposed to set up a Windows build environment for Pidgin or
-## Pidgin++ 2.x in one single shot, suitable for building with MSYS2 or MinGW
-## MSYS, without the long manual steps described in the wiki documentation at
+## This script is supposed to set up a Windows build environment for Pidgin or
+## Pidgin++ in one single shot, without the long manual steps described at
 ## http://developer.pidgin.im/wiki/BuildingWinPidgin.
 ##
-## I was designed based on that guide, and I will try my best to perform what
-## is described there, but I must say in advance you will need to manually
-## install the Bonjour SDK if you want to enable such protocol, and also GnuPG
-## if using MinGW MSYS. You will be given more details when I finish. I was
-## designed to run under MSYS2 with the pacman command available, or under MinGW
-## MSYS with mingw-get.
+## This script was designed based on that guide, and will do most of the work.
+## The manual steps include installation of the Bonjour SDK if using Pidgin, and
+## GnuPG if using MinGW MSYS. You will be given more details when the script
+## finishes. This tool was designed to run under MSYS2 with the pacman command
+## available, or under MinGW MSYS with mingw-get. Note that this does not mean
+## that the Pidgin variant can actually be compiled with such environments.
 ##
-## I am going to create a buildbox containing specific versions of GCC, Perl and
-## NSIS, along with Pidgin build dependencies. After running me and finishing
-## the manual steps you can configure system path with --path and then be able
-## to build Pidgin (Pidgin++ configures path automatically).
+## A development root will be created containing specific versions of GCC, Perl
+## and NSIS, along with build dependencies for the Pidgin variant. After running
+## this tool and finishing the manual steps, if using Pidgin you can configure
+## system path with --path and then be able to start building. Pidgin++
+## configures the system path automatically.
 ##
-## NOTES: source code tarball for 2.10.9 cannot be built on MinGW MSYS without
-## patching, or without some wget version newer than 1.12. Also, if you want to
-## sign the installers, you will need to follow the manual instructions.
+## NOTES: source code tarball for Pidgin 2.10.9 cannot be built on MinGW MSYS
+## without patching, or without some wget version newer than 1.12. Also, if you
+## want to sign the installers, you will need to follow the manual instructions.
 ##
 ## Usage:
 ##     @script.name [options] DEVELOPMENT_ROOT
