@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.10.12
+##    Pidgin Windows Development Setup 2014.10.15
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -28,6 +28,11 @@
 ##
 ## Usage:
 ##     @script.name [options] DEVELOPMENT_ROOT
+##
+##         --pkgbuild      Create a minimal environment for building Pidgin++
+##                         with a PKGBUILD from MSYS2. Only the dependencies
+##                         missing a pacman package or that for some reason
+##                         cannot be used are downloaded.
 ##
 ##     -g, --system-gcc    Disable download of custom GCC and its use in --path.
 ##     -p, --path          Print system path configuration for evaluation after
@@ -143,6 +148,14 @@ fi
 # Mutually exclusive options
 if [[ -n "$version" && -n "$no_source" ]]; then
     echo "A version can only be specified when downloading the source code."
+    echo "$see_help"
+    exit 1
+fi
+
+
+# Option available only for Pidgin++ under MSYS2
+if [[ -n "$pkgbuild" && -z "$pidgin_plus_plus" && "$system" != MSYS2 ]]; then
+    echo "The --pkgbuild option is only available for Pidgin++ and MSYS2."
     echo "$see_help"
     exit 1
 fi
@@ -265,18 +278,20 @@ fi
 
 
 # Install what is possible with package manager
-step "$installing_packages"
-for package in $packages; do install "$package"; done
-if [[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]]; then
-    ! available 7z && install "p7zip"
-    install "intltool"
+if [[ -z "$pkgbuild" ]]; then
+    step "$installing_packages"
+    for package in $packages; do install "$package"; done
+    if [[ -n "$pidgin_plus_plus" && "$system" = MSYS2 ]]; then
+        ! available 7z && install "p7zip"
+        install "intltool"
+    fi
+    echo
 fi
-echo
 
 
 # Download GCC
 mkdir -p "$cache/$mingw"
-if [[ -z "$system_gcc" ]]; then
+if [[ -z "$system_gcc" && -z "$pkgbuild" ]]; then
     step "$downloading_mingw"
     for gcc_package in \
         "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"                      \
@@ -351,39 +366,46 @@ fi
 # Download dependencies
 step "$downloading_dependencies"
 for build_dependency in \
-    "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
-    "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
-    "$pidgin_base_url/$gtkspell.tar.bz2"                                                             \
-    "$pidgin_base_url/enchant_1.6.0_win32.zip"                                                       \
-    "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz"                                                    \
-    "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz"                                                      \
-    "$pidgin_base_url/nss-3.15.4-nspr-4.10.2.tar.gz"                                                 \
     "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip"                                                \
     "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz"                                              \
-    "$gnome_base_url/dependencies/gettext-tools-0.17.zip"                                            \
-    "$gnome_base_url/gtk+/$gtk_bundle_version/$gtk_bundle"                                           \
-    "$gnome_base_url/dependencies/libxml2_2.9.0-1_win32.zip"                                         \
-    "$gnome_base_url/dependencies/gettext-runtime-0.17-1.zip"                                        \
-    "$gnome_base_url/intltool/0.40/intltool_0.40.4-1_win32.zip"                                      \
-    "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                     \
-    "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                    \
-    "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                                  \
-    "http://strawberryperl.com/download/$perl_version/$perl.zip"                                     \
-    "$mingw_gcc44_url/$gcc_core44.tar.gz/download"                                                   \
+    "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz"                                                    \
+    "$pidgin_base_url/perl_5-10-0.tar.gz"                                                            \
+    "$pidgin_base_url/tcl-8.4.5.tar.gz"                                                              \
+    "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz"                                                      \
 ; do download "$build_dependency" "$cache"; done
 
+if [[ -z "$pkgbuild" ]]; then
+    for build_dependency in \
+        "$pidgin_base_url/$gtkspell.tar.bz2"                                                         \
+        "$pidgin_base_url/enchant_1.6.0_win32.zip"                                                   \
+        "$pidgin_base_url/nss-3.15.4-nspr-4.10.2.tar.gz"                                             \
+        "$gnome_base_url/dependencies/gettext-tools-0.17.zip"                                        \
+        "$gnome_base_url/gtk+/$gtk_bundle_version/$gtk_bundle"                                       \
+        "$gnome_base_url/dependencies/libxml2_2.9.0-1_win32.zip"                                     \
+        "$gnome_base_url/dependencies/gettext-runtime-0.17-1.zip"                                    \
+        "$gnome_base_url/intltool/0.40/intltool_0.40.4-1_win32.zip"                                  \
+        "$gnome_base_url/dependencies/libxml2-dev_2.9.0-1_win32.zip"                                 \
+        "http://strawberryperl.com/download/$perl_version/$perl.zip"                                 \
+        "$mingw_gcc44_url/$gcc_core44.tar.gz/download"                                               \
+        "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"                \
+        "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"                              \
+    ; do download "$build_dependency" "$cache"; done
+fi
+
 if [[ -n "$pidgin_plus_plus" ]]; then
-    download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "https://github.com/vslavik/winsparkle/releases/download/v0.3/WinSparkle-0.3.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" oops xmlstarlet
-    download "http://win32builder.gnome.org/packages/3.6/gettext-dev_0.18.2.1-1_win32.zip" "$cache"
+    if [[ -z "$pkgbuild" ]]; then
+        download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
+        download "http://win32builder.gnome.org/packages/3.6/gettext-dev_0.18.2.1-1_win32.zip" "$cache"
+    fi
 fi
 echo
 
 
 # Extract GCC
 mkdir -p "$win32/$mingw"
-if [[ -z "$system_gcc" ]]; then
+if [[ -z "$system_gcc" && -z "$pkgbuild" ]]; then
     step "$extracting_mingw"
     for tarball in "$cache/$mingw/"*".tar.lzma"; do
         extract lzma "$tarball" "$win32/$mingw"
@@ -429,60 +451,69 @@ fi
 
 # Extract dependencies
 step "$extracting_dependencies"
-extract zip "$cache/intltool_0.40.4-1_win32.zip"              "$win32/intltool_0.40.4-1_win32"
-extract zip "$cache/$gtk_bundle"                              "$win32/gtk_2_0-$gtk_bundle_version"
-extract zip "$cache/gettext-tools-0.17.zip"                   "$win32/gettext-0.17"
-extract zip "$cache/gettext-runtime-0.17-1.zip"               "$win32/gettext-0.17"
-extract zip "$cache/libxml2_2.9.0-1_win32.zip"                "$win32/libxml2-2.9.0"
-extract zip "$cache/libxml2-dev_2.9.0-1_win32.zip"            "$win32/libxml2-2.9.0"
-extract zip "$cache/$perl.zip"                                "$win32/$perl"
-extract zip "$cache/$nsis.zip"                                "$win32"
 extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip"           "$win32"
-extract zip "$cache/enchant_1.6.0_win32.zip"                  "$win32"
-extract zip "$cache/Nsisunz.zip"                              "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
+if [[ -z "$pkgbuild" ]]; then
+    extract zip "$cache/intltool_0.40.4-1_win32.zip"          "$win32/intltool_0.40.4-1_win32"
+    extract zip "$cache/$gtk_bundle"                          "$win32/gtk_2_0-$gtk_bundle_version"
+    extract zip "$cache/gettext-tools-0.17.zip"               "$win32/gettext-0.17"
+    extract zip "$cache/gettext-runtime-0.17-1.zip"           "$win32/gettext-0.17"
+    extract zip "$cache/libxml2_2.9.0-1_win32.zip"            "$win32/libxml2-2.9.0"
+    extract zip "$cache/libxml2-dev_2.9.0-1_win32.zip"        "$win32/libxml2-2.9.0"
+    extract zip "$cache/$perl.zip"                            "$win32/$perl"
+    extract zip "$cache/enchant_1.6.0_win32.zip"              "$win32"
+    extract zip "$cache/$nsis.zip"                            "$win32"
+    extract zip "$cache/Nsisunz.zip"                          "$win32/$nsis/Plugins" "nsisunz/Release/nsisunz.dll"
+fi
 
 if [[ -n "$pidgin_plus_plus" ]]; then
     extract zip "$cache/WinSparkle-0.3.zip" "$win32"
-    extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
-    extract zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
+    if [[ -z "$pkgbuild" ]]; then
+        extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
+        extract zip "$cache/gettext-dev_0.18.2.1-1_win32.zip" "$win32/gtk_2_0-2.24"
+    fi
     if ! available xmlstarlet; then
         extract zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
         mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
     fi
 fi
 
-mkdir -p "$win32/$gcc_core44"
-extract gzip "$cache/$gcc_core44.tar.gz" "$win32/gcc-core-4.4.0-mingw32-dll"
-extract bzip2 "$cache/gtkspell-2.0.16.tar.bz2" "$win32"
-
+if [[ -z "$pkgbuild" ]]; then
+    mkdir -p "$win32/$gcc_core44"
+    extract gzip "$cache/$gcc_core44.tar.gz" "$win32/gcc-core-4.4.0-mingw32-dll"
+    extract bzip2 "$cache/gtkspell-2.0.16.tar.bz2" "$win32"
+fi
 for tarball in "$cache/"*".tar.gz"; do
     [[ "$tarball" = *"gcc-core-4.4.0-mingw32-dll.tar.gz" ]] && continue
     extract bsdtar "$tarball" "$win32"
 done
-info "Installing" "the NSIS SHA1 plugin"
-cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
+if [[ -z "$pkgbuild" ]]; then
+    info "Installing" "the NSIS SHA1 plugin"
+    cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
+fi
 echo
 
 
 # Finishing
-if [[ -n "$no_source" ]]; then
-    echo "Finished, remaining manual steps are:"
-else
-    echo "Finished, below are the remaining manual steps. After these you should be able"
-    echo "to build $pidgin_variant from the created source code directory."
-    echo
+if [[ -z "$pkgbuild" ]]; then
+    if [[ -n "$no_source" ]]; then
+        echo "Finished, remaining manual steps are:"
+    else
+        echo "Finished, below are the remaining manual steps. After these you should be able"
+        echo "to build $pidgin_variant from the created source code directory."
+        echo
+    fi
+
+    gnupg="Install GnuPG and make it available from PATH."
+    bonjour="Install the Bonjour SDK under $win32/Bonjour_SDK.${pidgin_plus_plus:+
+       This is only required if you want to enable the Bonjour protocol, otherwise
+       you can tell the build script of Pidgin++ to disable it.}"
+    sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
+       you want to build the GTK+ bundle, which requires extraction of RPM packages."
+
+    case "$system" in
+    MSYS2) printf "1. $bonjour\n\n" ;;
+    MSYS1) printf "1. $gnupg\n"
+           printf "2. $bonjour\n"
+           printf "${pidgin_plus_plus:+3. $sevenzip\n}\n" ;;
+    esac
 fi
-
-gnupg="Install GnuPG and make it available from PATH."
-bonjour="Install the Bonjour SDK under $win32/Bonjour_SDK.${pidgin_plus_plus:+
-   This is only required if you want to enable the Bonjour protocol, otherwise
-   you can tell the build script of Pidgin++ to disable it.}"
-sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
-   you want to build the GTK+ bundle, which requires extraction of RPM packages."
-
-case "$system" in
-MSYS2) printf "1. $bonjour\n\n" ;;
-MSYS1) printf "1. $gnupg\n"
-       printf "2. $bonjour\n"
-       printf "${pidgin_plus_plus:+3. $sevenzip\n}\n" ;;
-esac
