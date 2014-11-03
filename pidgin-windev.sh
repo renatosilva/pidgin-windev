@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.10.25
+##    Pidgin Windows Development Setup 2014.11.3
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -206,6 +206,8 @@ step "Configuring the necessary $system packages"
 for package in $packages; do install "$package"; done
 if [[ "$system" = MSYS2 ]]; then
     ! available 7z && install "p7zip"
+    install "mingw-w64-x86_64-gtkspell"
+    install "mingw-w64-i686-gtkspell"
     install "intltool"
 fi
 echo
