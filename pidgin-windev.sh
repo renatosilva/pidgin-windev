@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version="2014.10.7"
-pidgin_version="2.10.9.next"
+version="2014.12.5"
+pidgin_version="2.10.11"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
@@ -24,11 +24,10 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     finishing the manual steps you should be able to build Pidgin with
     'make -f Makefile.mingw installers' or the like.
 
-    NOTES: source code tarball for 2.10.9 cannot be built on MSYS without
-    patching, or without some wget version newer than 1.12. In order to download
-    Pidgin dependencies without security warnings, you need to have the
-    appropriate CA certificates available to wget. Also, if you want to sign the
-    installers, you will need to follow the manual instructions.
+    NOTES: In order to download Pidgin dependencies without security warnings,
+    you need to have the appropriate CA certificates available to wget. Also, if
+    you want to sign the installers, you will need to follow the manual
+    instructions.
 
     Usage: $0 DEVELOPMENT_ROOT [--path] | --help | -h"
     echo
