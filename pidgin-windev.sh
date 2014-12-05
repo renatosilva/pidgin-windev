@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.11.3
+##    Pidgin Windows Development Setup 2014.12.5
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -14,9 +14,7 @@
 ## is created, when executed under MSYS2 a Pidgin++ environment is created
 ## instead. For Pidgin, after running this tool and finishing the manual steps
 ## you can configure system path with --path and then be able to start building.
-## Pidgin++ does this automatically. Note that the source code tarball of Pidgin
-## 2.10.9 cannot be built on MinGW MSYS without patching, or without some wget
-## version newer than 1.12.
+## Pidgin++ does this automatically.
 ##
 ## Usage:
 ##     @script.name [options] DEVELOPMENT_ROOT
@@ -47,7 +45,7 @@
 
 source easyoptions || exit
 plus_plus_version="14.1"
-pidgin_version="2.10.9"
+pidgin_version="2.10.11"
 
 # Output formatting
 step() { printf "${green}$1${normal}\n"; }
@@ -288,7 +286,7 @@ if [[ "$system" = MSYS2 ]]; then
     download "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip" "$cache"
     download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" oops xmlstarlet
 else
-    download "$pidgin_base_url/nss-3.15.4-nspr-4.10.2.tar.gz" "$cache"
+    download "$pidgin_base_url/nss-3.17.1-nspr-4.10.7.tar.gz" "$cache"
     download "$gnome_base_url/win32/dependencies/gettext-tools-0.17.zip" "$cache"
     download "$gnome_base_url/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip" "$cache"
     download "$gnome_base_url/win32/dependencies/libxml2_2.9.0-1_win32.zip" "$cache"
