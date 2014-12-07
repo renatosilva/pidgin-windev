@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.5
+##    Pidgin Windows Development Setup 2014.12.7
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -204,9 +204,17 @@ step "Configuring the necessary $system packages"
 for package in $packages; do install "$package"; done
 if [[ "$system" = MSYS2 ]]; then
     ! available 7z && install "p7zip"
-    install "mingw-w64-x86_64-gtkspell"
-    install "mingw-w64-i686-gtkspell"
     install "intltool"
+    for architecture in i686 x86_64; do
+        install "mingw-w64-${architecture}-gtk2"
+        install "mingw-w64-${architecture}-gtkspell"
+        install "mingw-w64-${architecture}-cyrus-sasl"
+        install "mingw-w64-${architecture}-sqlite3"
+        install "mingw-w64-${architecture}-nss"
+        install "mingw-w64-${architecture}-nspr"
+        install "mingw-w64-${architecture}-tcl"
+        install "mingw-w64-${architecture}-tk"
+    done
 fi
 echo
 
