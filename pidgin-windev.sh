@@ -44,7 +44,7 @@
 ##
 
 source easyoptions || exit
-plus_plus_version="14.1"
+plus_plus_version="15.1"
 pidgin_version="2.10.11"
 
 # Output formatting
