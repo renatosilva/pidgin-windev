@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.7
+##    Pidgin Windows Development Setup 2014.12.11
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -209,6 +209,7 @@ if [[ "$system" = MSYS2 ]]; then
         install "mingw-w64-${architecture}-gtk2"
         install "mingw-w64-${architecture}-gtkspell"
         install "mingw-w64-${architecture}-cyrus-sasl"
+        install "mingw-w64-${architecture}-meanwhile"
         install "mingw-w64-${architecture}-sqlite3"
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-nspr"
@@ -302,6 +303,7 @@ else
     download "$gnome_base_url/win32/intltool/0.40/intltool_0.40.4-1_win32.zip" "$cache"
     download "$gnome_base_url/win32/dependencies/libxml2-dev_2.9.0-1_win32.zip" "$cache"
     download "http://strawberryperl.com/download/$perl_version/$perl.zip" "$cache"
+    download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
     download "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz" "$cache"
     download "$mingw_gcc44_url/$gcc_core44.tar.gz/download" "$cache"
     download "$pidgin_base_url/enchant_1.6.0_win32.zip" "$cache"
@@ -310,7 +312,6 @@ else
 fi
 download "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz" "$cache"
 download "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz" "$cache"
-download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
 download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
 download "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download" "$cache"
 download "$pidgin_base_url/perl_5-10-0.tar.gz" "$cache"
@@ -365,7 +366,6 @@ for tarball in "$cache/"*.tar.gz; do
     extract bsdtar "$tarball" "$win32"
 done
 extract zip "$cache/$nsis.zip" "$win32"
-extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip" "$win32"
 extract zip "$cache/Nsisunz.zip" "$win32/$nsis/Plugins" nsisunz/Release/nsisunz.dll
 info "Installing" "SHA1 plugin for NSIS"; cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
 
@@ -378,6 +378,7 @@ if [[ "$system" = MSYS2 ]]; then
     extract zip "$cache/WinSparkle-0.4.zip" "$win32"
     extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
 else
+    extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip" "$win32"
     extract gzip "$cache/$gcc_core44.tar.gz" "$win32/$gcc_core44"
     extract zip "$cache/gettext-tools-0.17.zip" "$win32/gettext-0.17"
     extract zip "$cache/gettext-runtime-0.17-1.zip" "$win32/gettext-0.17"
