@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version="2014.12.5"
-pidgin_version="2.10.11"
+version="2014.12.18"
+pidgin_version="2.10.11.next"
 
 if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
     Pidgin Windows Development Setup $version
@@ -15,9 +15,9 @@ if [[ -z "$1" || "$1" = "--help" || "$1" = "-h" ]]; then echo "
 
     I was designed based on that page, and I will try my best to perform what
     is described there, but I must say in advance you will need to manually
-    install GnuPG, Bonjour SDK, and the Nsisunz NSIS plugin. You will be given
-    more details when I finish. I was designed to run under MinGW MSYS with
-    mingw-get command available.
+    install GnuPG and the Nsisunz NSIS plugin. You will be given more details
+    when I finish. I was designed to run under MinGW MSYS with mingw-get command
+    available.
 
     I am going to create a buildbox containing specific versions of GCC, Perl
     and NSIS, along with Pidgin build dependencies. After running me and
@@ -183,8 +183,7 @@ echo
 
 echo "Finished setting up the build environment, remaining manual steps are:
 1. Install GnuPG and make it available from PATH
-2. Install Bonjour SDK under $win32/Bonjour_SDK
-3. Install Nsisunz plugin for NSIS under $win32/$nsis/Plugins
-4. Add downloaded GCC, Perl and NSIS before others in your PATH by running
+2. Install Nsisunz plugin for NSIS under $win32/$nsis/Plugins
+3. Add downloaded GCC, Perl and NSIS before others in your PATH by running
    eval \$($0 $devroot --path)."
 echo
