@@ -203,14 +203,15 @@ fi
 step "Configuring the necessary $system packages"
 for package in $packages; do install "$package"; done
 if [[ "$system" = MSYS2 ]]; then
-    ! available 7z && install "p7zip"
-    install "intltool"
+    install "base-devel"
     for architecture in i686 x86_64; do
+        install "mingw-w64-${architecture}-gcc"
         install "mingw-w64-${architecture}-gtk2"
         install "mingw-w64-${architecture}-gtkspell"
         install "mingw-w64-${architecture}-cyrus-sasl"
         install "mingw-w64-${architecture}-meanwhile"
         install "mingw-w64-${architecture}-sqlite3"
+        install "mingw-w64-${architecture}-drmingw"
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-nspr"
         install "mingw-w64-${architecture}-tcl"
