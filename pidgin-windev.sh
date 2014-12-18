@@ -1,14 +1,14 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.11
+##    Pidgin Windows Development Setup 2014.12.18
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
 ## This script is supposed to set up a Windows build environment for Pidgin or
 ## Pidgin++ in one single shot, without the long manual steps described at
-## http://developer.pidgin.im/wiki/BuildingWinPidgin. It was designed based on
-## that guide, and will do most of the work.
+## http://developer.pidgin.im/wiki/BuildingWinPidgin. These steps are
+## automatically executed, except for GnuPG installation when using MinGW MSYS.
 ##
 ## When this script is executed under MinGW MSYS a build environment for Pidgin
 ## is created, when executed under MSYS2 a Pidgin++ environment is created
@@ -45,7 +45,7 @@
 
 source easyoptions || exit
 plus_plus_version="15.1"
-pidgin_version="2.10.11"
+pidgin_version="2.10.11.next"
 
 # Output formatting
 step() { printf "${green}$1${normal}\n"; }
@@ -392,26 +392,4 @@ else
 fi
 echo
 
-# Finishing
-
-if [[ -n "$no_source" ]]; then
-    echo "Finished, remaining manual steps are:"
-else
-    echo "Finished, below are the remaining manual steps. After these you should be able"
-    echo "to build $pidgin_variant from the created source code directory."
-    echo
-fi
-
-gnupg="Install GnuPG and make it available from PATH."
-bonjour="Install the Bonjour SDK under $win32/Bonjour_SDK.${pidgin_plus_plus:+
-   This is only required if you want to enable the Bonjour protocol, otherwise
-   you can tell the build script of Pidgin++ to disable it.}"
-sevenzip="Install 7-Zip and make it available from PATH. This step is only required if
-   you want to build the GTK+ bundle, which requires extraction of RPM packages."
-
-case "$system" in
-MSYS2) printf "1. $bonjour\n\n" ;;
-MSYS1) printf "1. $gnupg\n"
-       printf "2. $bonjour\n"
-       printf "${pidgin_plus_plus:+3. $sevenzip\n}\n" ;;
-esac
+! available gpg_ && warn "could not find GnuPG in system path.\n"
