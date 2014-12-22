@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.18
+##    Pidgin Windows Development Setup 2014.12.21
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -308,6 +308,7 @@ else
     download "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz" "$cache"
     download "$mingw_gcc44_url/$gcc_core44.tar.gz/download" "$cache"
     download "$pidgin_base_url/enchant_1.6.0_win32.zip" "$cache"
+    download "$pidgin_base_url/perl_5-10-0.tar.gz" "$cache"
     download "$pidgin_base_url/$gtkspell.tar.bz2" "$cache"
     download "$pidgin_base_url/tcl-8.4.5.tar.gz" "$cache"
 fi
@@ -315,7 +316,6 @@ download "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz" "$cache"
 download "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz" "$cache"
 download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
 download "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download" "$cache"
-download "$pidgin_base_url/perl_5-10-0.tar.gz" "$cache"
 echo
 
 # Extract GCC
