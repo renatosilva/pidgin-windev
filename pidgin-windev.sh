@@ -139,7 +139,6 @@ gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 mingw_gcc44_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
 mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507-2"
-xmlstarlet_base_url="http://sourceforge.net/projects/xmlstar/files/xmlstarlet"
 packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
 # Functions
@@ -151,7 +150,6 @@ available() {
 
 download() {
     error_handler="$3"
-    available "$4" && return
     filename="${1%/download}"
     filename="${filename##*/}"
     info "Fetching" "$filename"
@@ -210,12 +208,14 @@ if [[ "$system" = MSYS2 ]]; then
         install "mingw-w64-${architecture}-gtkspell"
         install "mingw-w64-${architecture}-cyrus-sasl"
         install "mingw-w64-${architecture}-meanwhile"
+        install "mingw-w64-${architecture}-silc-toolkit"
         install "mingw-w64-${architecture}-sqlite3"
         install "mingw-w64-${architecture}-drmingw"
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-nspr"
         install "mingw-w64-${architecture}-tcl"
         install "mingw-w64-${architecture}-tk"
+        install "mingw-w64-${architecture}-xmlstarlet"
     done
 fi
 echo
@@ -294,7 +294,6 @@ step "Downloading build dependencies"
 if [[ "$system" = MSYS2 ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip" "$cache"
-    download "$xmlstarlet_base_url/1.6.0/xmlstarlet-1.6.0-win32.zip/download" "$cache" oops xmlstarlet
 else
     download "$pidgin_base_url/nss-3.17.1-nspr-4.10.7.tar.gz" "$cache"
     download "$gnome_base_url/win32/dependencies/gettext-tools-0.17.zip" "$cache"
@@ -305,6 +304,7 @@ else
     download "$gnome_base_url/win32/dependencies/libxml2-dev_2.9.0-1_win32.zip" "$cache"
     download "http://strawberryperl.com/download/$perl_version/$perl.zip" "$cache"
     download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
+    download "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz" "$cache"
     download "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz" "$cache"
     download "$mingw_gcc44_url/$gcc_core44.tar.gz/download" "$cache"
     download "$pidgin_base_url/enchant_1.6.0_win32.zip" "$cache"
@@ -312,7 +312,6 @@ else
     download "$pidgin_base_url/$gtkspell.tar.bz2" "$cache"
     download "$pidgin_base_url/tcl-8.4.5.tar.gz" "$cache"
 fi
-download "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz" "$cache"
 download "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz" "$cache"
 download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
 download "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download" "$cache"
@@ -372,10 +371,6 @@ info "Installing" "SHA1 plugin for NSIS"; cp "$win32/pidgin-inst-deps-20130214/S
 
 # Extract specific dependencies
 if [[ "$system" = MSYS2 ]]; then
-    if ! available xmlstarlet; then
-        extract zip "$cache/xmlstarlet-1.6.0-win32.zip" "$win32" "xmlstarlet-1.6.0/xml.exe"
-        mv "$win32/xml.exe" "$win32/xmlstarlet.exe"
-    fi
     extract zip "$cache/WinSparkle-0.4.zip" "$win32"
     extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
 else
