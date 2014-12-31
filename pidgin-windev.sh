@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.21
+##    Pidgin Windows Development Setup 2014.12.31
 ##    Copyright 2012-2014 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -393,4 +393,4 @@ else
 fi
 echo
 
-! available gpg_ && warn "could not find GnuPG in system path.\n"
+! available gpg && warn "could not find GnuPG in system path.\n"
