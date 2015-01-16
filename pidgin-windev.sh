@@ -142,6 +142,7 @@ perl="strawberry-perl-$perl_version"
 gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gtkspell="gtkspell-2.0.16"
 nsis="nsis-2.46"
+pidgin_inst_deps="pidgin-inst-deps-20130214"
 pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
@@ -173,14 +174,15 @@ extract() {
     compressed="$2"
     directory="$3"
     file="$4"
+    level="$5"
     compressed_name="${compressed##*/}"
-    info "Extracting" "$compressed_name"
+    info "Extracting" "${file:+${file##*/} from }${compressed_name}"
     mkdir -p "$directory"
     case "$format" in
         bsdtar)  bsdtar -xzf          "$compressed"  --directory "$directory" ;;
         lzma)    tar --lzma -xf       "$compressed"  --directory "$directory" ;;
-        gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
         bzip2)   tar -xjf             "$compressed"  --directory "$directory" ;;
+        gzip)    tar -xzf             "$compressed"  --directory "$directory" $file ${level:+--strip-components=$level} ;;
         zip)     unzip -qo${file:+j}  "$compressed"     $file -d "$directory" ;;
     esac || exit
 }
@@ -321,7 +323,7 @@ else
     download "$pidgin_base_url/$gtkspell.tar.bz2" "$cache"
     download "$pidgin_base_url/tcl-8.4.5.tar.gz" "$cache"
 fi
-download "$pidgin_base_url/pidgin-inst-deps-20130214.tar.gz" "$cache"
+download "$pidgin_base_url/$pidgin_inst_deps.tar.gz" "$cache"
 download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
 download "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download" "$cache"
 echo
@@ -372,12 +374,13 @@ fi
 # Extract common dependencies
 step "Extracting build dependencies"
 for tarball in "$cache/"*.tar.gz; do
-    [[ "$tarball" = *"$gcc_core44.tar.gz" ]] && continue
+    [[ "$tarball" = *"$gcc_core44.tar.gz"       ]] && continue
+    [[ "$tarball" = *"$pidgin_inst_deps.tar.gz" ]] && continue
     extract bsdtar "$tarball" "$win32"
 done
 extract zip "$cache/$nsis.zip" "$win32"
 extract zip "$cache/Nsisunz.zip" "$win32/$nsis/Plugins" nsisunz/Release/nsisunz.dll
-info "Installing" "SHA1 plugin for NSIS"; cp "$win32/pidgin-inst-deps-20130214/SHA1Plugin.dll" "$win32/$nsis/Plugins/"
+extract gzip "$cache/$pidgin_inst_deps.tar.gz" "$win32/$nsis/Plugins/" $pidgin_inst_deps/SHA1Plugin.dll 1
 
 # Extract specific dependencies
 if [[ "$system" = MSYS2 ]]; then
