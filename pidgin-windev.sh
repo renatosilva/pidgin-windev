@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2014.12.31
-##    Copyright 2012-2014 Renato Silva
+##    Pidgin Windows Development Setup 2015.1.16
+##    Copyright 2012-2015 Renato Silva
 ##    GPLv2 licensed
 ##
 ## This script is supposed to set up a Windows build environment for Pidgin or
@@ -213,6 +213,7 @@ if [[ "$system" = MSYS2 ]]; then
         install "mingw-w64-${architecture}-drmingw"
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-nspr"
+        install "mingw-w64-${architecture}-perl"
         install "mingw-w64-${architecture}-tcl"
         install "mingw-w64-${architecture}-tk"
         install "mingw-w64-${architecture}-xmlstarlet"
