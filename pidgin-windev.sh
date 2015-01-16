@@ -53,12 +53,20 @@ info() { printf "$1${2:+ ${purple}$2${normal}}\n"; }
 warn() { printf "${1:+${yellow}Warning:${normal} $1}\n"; }
 oops() { printf "${red}Error:${normal} $1.\nSee --help for usage and options.\n"; exit 1; }
 if [[ -t 1 && -z "$no_color" ]]; then
-    red="\e[38;05;9m"
-    green="\e[0;32m"
-    blue="\e[38;05;32m"
-    yellow="\e[38;05;226m"
-    purple="\e[38;05;165m"
     normal="\e[0m"
+    if [[ "$MSYSCON" = mintty* && "$TERM" = *256color* ]]; then
+        red="\e[38;05;9m"
+        green="\e[38;05;76m"
+        blue="\e[38;05;74m"
+        yellow="\e[0;33m"
+        purple="\e[38;05;165m"
+    else
+        red="\e[1;31m"
+        green="\e[1;32m"
+        blue="\e[1;34m"
+        yellow="\e[1;33m"
+        purple="\e[1;35m"
+    fi
 fi
 
 # Pidgin versions
