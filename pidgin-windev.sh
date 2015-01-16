@@ -351,6 +351,7 @@ if [[ -n "$link_to_me" ]]; then
         target="$(pwd -W | tr / \\\\)\\$filename"
         target_unix="$(pwd)/$filename"
         cd - > /dev/null
+        mkdir -p "$win32"
         cd "$win32"
         info "From:" "$win32/$filename"
         info "To:" "$target_unix"
