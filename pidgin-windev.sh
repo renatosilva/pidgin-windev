@@ -373,8 +373,10 @@ info "Installing" "SHA1 plugin for NSIS"; cp "$win32/pidgin-inst-deps-20130214/S
 
 # Extract specific dependencies
 if [[ "$system" = MSYS2 ]]; then
-    extract zip "$cache/WinSparkle-0.4.zip" "$win32"
     extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
+    extract zip "$cache/WinSparkle-0.4.zip" "$win32"
+    rm "$win32/WinSparkle-0.4/Release/WinSparkle.lib"
+    rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
 else
     extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip" "$win32"
     extract gzip "$cache/$gcc_core44.tar.gz" "$win32/$gcc_core44"
