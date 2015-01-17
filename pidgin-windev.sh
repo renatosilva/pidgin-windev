@@ -374,8 +374,8 @@ fi
 # Extract common dependencies
 step "Extracting build dependencies"
 for tarball in "$cache/"*.tar.gz; do
-    [[ "$tarball" = *"$gcc_core44.tar.gz"       ]] && continue
-    [[ "$tarball" = *"$pidgin_inst_deps.tar.gz" ]] && continue
+    [[ "$tarball" = *"$gcc_core44.tar.gz" ]] && continue
+    [[ "$tarball" = *"$pidgin_inst_deps.tar.gz" && "$system" = MSYS2 ]] && continue
     extract bsdtar "$tarball" "$win32"
 done
 extract zip "$cache/$nsis.zip" "$win32"
