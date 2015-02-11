@@ -41,6 +41,7 @@
 ##                         requires administrative privileges.
 ##
 ##     -c, --no-color      Disable colored output.
+##     -v, --verbose       Verbose output.
 ##
 
 source easyoptions || exit
@@ -184,10 +185,13 @@ extract() {
 install() {
     package="$1"
     error="failed installing $package"
-    info "Checking" "$package"
+    if [[ -n "$verbose" ]]
+        then device="/dev/stdout"; step "Checking $package"
+        else device="/dev/null";   info "Checking" "$package"
+    fi
     case "$system" in
-        MSYS1) mingw-get install "$package" 2> /dev/null || oops "$error" ;;
-        MSYS2) pacman --noconfirm --sync --needed "$package" > /dev/null 2>&1 || oops "$error" ;;
+        MSYS1)      mingw-get install "$package" --verbose=0 > "$device" 2>&1 || oops "$error"; printf "${verbose:+\n}" ;;
+        MSYS2) pacman --needed --sync "$package" --noconfirm > "$device" 2>&1 || oops "$error"; printf "${verbose:+\n}" ;;
     esac
 }
 
@@ -201,7 +205,7 @@ if [[ -n "$path" ]]; then
 fi
 
 # Install what is possible with package manager
-step "Installing the necessary packages"
+[[ -z "$verbose" ]] && step "Installing the necessary packages"
 if [[ "$system" = MSYS2 ]]; then
     install "base-devel"
     install "bsdtar"
@@ -238,7 +242,7 @@ else
     install "msys-wget"
     install "msys-zip"
 fi
-echo
+[[ -z "$verbose" ]] && echo
 
 # Download GCC
 if [[ "$system" = MSYS1 ]]; then
