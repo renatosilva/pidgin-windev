@@ -222,12 +222,12 @@ if [[ "$system" = MSYS2 ]]; then
         install "mingw-w64-${architecture}-gcc"
         install "mingw-w64-${architecture}-gtk2"
         install "mingw-w64-${architecture}-gtkspell"
+        install "mingw-w64-${architecture}-libxml2"
         install "mingw-w64-${architecture}-meanwhile"
         install "mingw-w64-${architecture}-nspr"
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-perl"
         install "mingw-w64-${architecture}-silc-toolkit"
-        install "mingw-w64-${architecture}-sqlite3"
         install "mingw-w64-${architecture}-xmlstarlet"
     done
 else
