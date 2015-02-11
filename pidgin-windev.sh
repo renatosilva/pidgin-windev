@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##
-##    Pidgin Windows Development Setup 2015.1.16
+##    Pidgin Windows Development Setup 2015.2.11
 ##    Copyright 2012-2015 Renato Silva
 ##    GPLv2 licensed
 ##
@@ -137,7 +137,7 @@ cd - > /dev/null
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 mingw="mingw-gcc-4.7.2"
-perl_version="5.10.1.5"
+perl_version="5.20.1.1"
 perl="strawberry-perl-$perl_version"
 gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gtkspell="gtkspell-2.0.16"
@@ -224,8 +224,6 @@ if [[ "$system" = MSYS2 ]]; then
         install "mingw-w64-${architecture}-nss"
         install "mingw-w64-${architecture}-nspr"
         install "mingw-w64-${architecture}-perl"
-        install "mingw-w64-${architecture}-tcl"
-        install "mingw-w64-${architecture}-tk"
         install "mingw-w64-${architecture}-xmlstarlet"
     done
 fi
@@ -306,22 +304,20 @@ if [[ "$system" = MSYS2 ]]; then
     download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
     download "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip" "$cache"
 else
-    download "$pidgin_base_url/nss-3.17.1-nspr-4.10.7.tar.gz" "$cache"
+    download "$pidgin_base_url/nss-3.17.3-nspr-4.10.7.tar.gz" "$cache"
     download "$gnome_base_url/win32/dependencies/gettext-tools-0.17.zip" "$cache"
     download "$gnome_base_url/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip" "$cache"
-    download "$gnome_base_url/win32/dependencies/libxml2_2.9.0-1_win32.zip" "$cache"
     download "$gnome_base_url/win32/dependencies/gettext-runtime-0.17-1.zip" "$cache"
     download "$gnome_base_url/win32/intltool/0.40/intltool_0.40.4-1_win32.zip" "$cache"
-    download "$gnome_base_url/win32/dependencies/libxml2-dev_2.9.0-1_win32.zip" "$cache"
-    download "http://strawberryperl.com/download/$perl_version/$perl.zip" "$cache"
+    download "http://strawberryperl.com/download/$perl_version/$perl-32bit.zip" "$cache"
     download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
-    download "$pidgin_base_url/silc-toolkit-1.1.10.tar.gz" "$cache"
-    download "$pidgin_base_url/cyrus-sasl-2.1.25.tar.gz" "$cache"
+    download "$pidgin_base_url/silc-toolkit-1.1.12.tar.gz" "$cache"
+    download "$pidgin_base_url/cyrus-sasl-2.1.26_daa1.tar.gz" "$cache"
     download "$mingw_gcc44_url/$gcc_core44.tar.gz/download" "$cache"
+    download "$pidgin_base_url/libxml2-2.9.2_daa1.tar.gz" "$cache"
     download "$pidgin_base_url/enchant_1.6.0_win32.zip" "$cache"
-    download "$pidgin_base_url/perl_5-10-0.tar.gz" "$cache"
+    download "$pidgin_base_url/perl-$perl_version.tar.gz" "$cache"
     download "$pidgin_base_url/$gtkspell.tar.bz2" "$cache"
-    download "$pidgin_base_url/tcl-8.4.5.tar.gz" "$cache"
 fi
 download "$pidgin_base_url/$pidgin_inst_deps.tar.gz" "$cache"
 download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
@@ -374,7 +370,8 @@ fi
 # Extract common dependencies
 step "Extracting build dependencies"
 for tarball in "$cache/"*.tar.gz; do
-    [[ "$tarball" = *"$gcc_core44.tar.gz" ]] && continue
+    [[ "$tarball" = *"$gcc_core44.tar.gz"                            ]] && continue
+    [[ "$tarball" = *"libxml2-2.9.2_daa1.tar.gz"                     ]] && continue
     [[ "$tarball" = *"$pidgin_inst_deps.tar.gz" && "$system" = MSYS2 ]] && continue
     extract bsdtar "$tarball" "$win32"
 done
@@ -390,16 +387,15 @@ if [[ "$system" = MSYS2 ]]; then
     rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
 else
     extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip" "$win32"
+    extract gzip "$cache/libxml2-2.9.2_daa1.tar.gz" "$win32"
     extract gzip "$cache/$gcc_core44.tar.gz" "$win32/$gcc_core44"
     extract zip "$cache/gettext-tools-0.17.zip" "$win32/gettext-0.17"
     extract zip "$cache/gettext-runtime-0.17-1.zip" "$win32/gettext-0.17"
-    extract zip "$cache/libxml2_2.9.0-1_win32.zip" "$win32/libxml2-2.9.0"
-    extract zip "$cache/libxml2-dev_2.9.0-1_win32.zip" "$win32/libxml2-2.9.0"
     extract zip "$cache/intltool_0.40.4-1_win32.zip" "$win32/intltool_0.40.4-1_win32"
     extract zip "$cache/gtk+-bundle_2.14.7-20090119_win32.zip" "$win32/gtk_2_0-2.14"
     extract zip "$cache/enchant_1.6.0_win32.zip" "$win32"
     extract bzip2 "$cache/$gtkspell.tar.bz2" "$win32"
-    extract zip "$cache/$perl.zip" "$win32/$perl"
+    extract zip "$cache/$perl-32bit.zip" "$win32/$perl"
 fi
 echo
 
