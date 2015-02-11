@@ -138,7 +138,8 @@ cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 mingw="mingw-gcc-4.7.2"
 perl_version="5.20.1.1"
-perl="strawberry-perl-$perl_version"
+perl="strawberry-perl-$perl_version-32bit"
+perl_dir="strawberry-perl-${perl_version%.*}"
 gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gtkspell="gtkspell-2.0.16"
 nsis="nsis-2.46"
@@ -201,7 +202,7 @@ install() {
 # Path configuration
 if [[ -n "$path" ]]; then
     case "$system" in
-        MSYS1) echo "export PATH=\"$win32:$win32/$nsis:$win32/$mingw/bin:$win32/$perl/perl/bin:$PATH\"" ;;
+        MSYS1) echo "export PATH=\"$win32:$win32/$nsis:$win32/$mingw/bin:$win32/$perl_dir/perl/bin:$PATH\"" ;;
         MSYS2) echo "export PATH=\"$win32:$win32/$nsis:$PATH\"" ;;
     esac
     exit
@@ -309,7 +310,7 @@ else
     download "$gnome_base_url/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip" "$cache"
     download "$gnome_base_url/win32/dependencies/gettext-runtime-0.17-1.zip" "$cache"
     download "$gnome_base_url/win32/intltool/0.40/intltool_0.40.4-1_win32.zip" "$cache"
-    download "http://strawberryperl.com/download/$perl_version/$perl-32bit.zip" "$cache"
+    download "http://strawberryperl.com/download/$perl_version/$perl.zip" "$cache"
     download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
     download "$pidgin_base_url/silc-toolkit-1.1.12.tar.gz" "$cache"
     download "$pidgin_base_url/cyrus-sasl-2.1.26_daa1.tar.gz" "$cache"
@@ -395,7 +396,7 @@ else
     extract zip "$cache/gtk+-bundle_2.14.7-20090119_win32.zip" "$win32/gtk_2_0-2.14"
     extract zip "$cache/enchant_1.6.0_win32.zip" "$win32"
     extract bzip2 "$cache/$gtkspell.tar.bz2" "$win32"
-    extract zip "$cache/$perl-32bit.zip" "$win32/$perl"
+    extract zip "$cache/$perl.zip" "$win32/$perl_dir"
 fi
 echo
 
