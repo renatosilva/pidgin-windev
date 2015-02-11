@@ -169,7 +169,6 @@ extract() {
     directory="$2"
     compressed="$3"
     file="$4"
-    level="$5"
     compressed_name="${compressed##*/}"
     info "Extracting" "${file:+${file##*/} from }${compressed_name}"
     mkdir -p "$directory"
@@ -177,7 +176,7 @@ extract() {
         bsdtar)  bsdtar -xzf          "$compressed"  --directory "$directory" ;;
         lzma)    tar --lzma -xf       "$compressed"  --directory "$directory" ;;
         bzip2)   tar -xjf             "$compressed"  --directory "$directory" ;;
-        gzip)    tar -xzf             "$compressed"  --directory "$directory" $file ${level:+--strip-components=$level} ;;
+        gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
         zip)     unzip -qo${file:+j}  "$compressed"     $file -d "$directory" ;;
     esac || exit
 }
@@ -210,6 +209,7 @@ if [[ "$system" = MSYS2 ]]; then
     install "coreutils"
     install "libiconv"
     install "libopenssl"
+    install "rsync"
     install "unzip"
     install "zip"
     for architecture in i686 x86_64; do
@@ -312,7 +312,6 @@ fi
 # Download dependencies
 step "Downloading build dependencies"
 if [[ "$system" = MSYS2 ]]; then
-    download "$cache" "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip"
     download "$cache" "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip"
 else
     download "$cache" "$gnome_base_url/win32/dependencies/gettext-runtime-0.17-1.zip"
@@ -328,9 +327,9 @@ else
     download "$cache" "$pidgin_base_url/nss-3.17.3-nspr-4.10.7.tar.gz"
     download "$cache" "$pidgin_base_url/perl-$perl_version.tar.gz"
     download "$cache" "$pidgin_base_url/silc-toolkit-1.1.12.tar.gz"
+    download "$cache" "$pidgin_base_url/$pidgin_inst_deps.tar.gz"
     download "$cache" "http://strawberryperl.com/download/$perl_version/$perl.zip"
 fi
-download "$cache" "$pidgin_base_url/$pidgin_inst_deps.tar.gz"
 download "$cache" "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"
 download "$cache" "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"
 echo
@@ -383,11 +382,9 @@ step "Extracting build dependencies"
 extract zip "$win32" "$cache/$nsis.zip"
 extract zip "$win32/$nsis/Plugins" "$cache/Nsisunz.zip" nsisunz/Release/nsisunz.dll
 if [[ "$system" = MSYS2 ]]; then
-    extract gzip "$win32/$nsis/Plugins"   "$cache/$pidgin_inst_deps.tar.gz" $pidgin_inst_deps/SHA1Plugin.dll 1
-    extract zip  "$win32/$nsis/Plugins"   "$cache/Inetc.zip" "Plugins/inetc.dll"
-    extract zip  "$win32"                 "$cache/WinSparkle-0.4.zip"
-                                          rm "$win32/WinSparkle-0.4/Release/WinSparkle.lib"
-                                          rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
+    extract zip "$win32" "$cache/WinSparkle-0.4.zip"
+    rm "$win32/WinSparkle-0.4/Release/WinSparkle.lib"
+    rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
 else
     extract gzip   "$win32"               "$cache/$pidgin_inst_deps.tar.gz"
     extract gzip   "$win32"               "$cache/libxml2-2.9.2_daa1.tar.gz"
