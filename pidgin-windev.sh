@@ -73,8 +73,8 @@ fi
 if [[ -n "$which_pidgin" ]]; then
     [[ "$pidgin_version" = *.next ]] && pidgin_prefix="next version following "
     [[ "$plus_plus_version" = *.next ]] && plus_plus_prefix="next version following "
-    info "Pidgin is" "${pidgin_prefix}${pidgin_version%.next}"
-    info "Pidgin++ is" "${plus_plus_prefix}${plus_plus_version%.next}"
+    echo "Pidgin is ${pidgin_prefix}${pidgin_version%.next}"
+    echo "Pidgin++ is ${plus_plus_prefix}${plus_plus_version%.next}"
     exit
 fi
 
@@ -136,44 +136,38 @@ cd - > /dev/null
 # Configuration
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
+nsis="nsis-2.46"
 mingw="mingw-gcc-4.7.2"
+gtkspell="gtkspell-2.0.16"
+gcc_core44="gcc-core-4.4.0-mingw32-dll"
+pidgin_inst_deps="pidgin-inst-deps-20130214"
+intltool="intltool_0.40.4-1_win32"
 perl_version="5.20.1.1"
 perl="strawberry-perl-$perl_version-32bit"
 perl_dir="strawberry-perl-${perl_version%.*}"
-gcc_core44="gcc-core-4.4.0-mingw32-dll"
-gtkspell="gtkspell-2.0.16"
-nsis="nsis-2.46"
-pidgin_inst_deps="pidgin-inst-deps-20130214"
 pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="http://ftp.gnome.org/pub/gnome/binaries"
 mingw_base_url="http://sourceforge.net/projects/mingw/files/MinGW/Base"
 mingw_gcc44_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
 mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507-2"
-packages="bzip2 libiconv msys-make msys-patch msys-zip msys-unzip msys-bsdtar msys-wget msys-libopenssl msys-coreutils"
 
 # Functions
 
-available() {
-    which "$1" > /dev/null 2>&1
-    return $?;
-}
-
 download() {
-    error_handler="$3"
-    filename="${1%/download}"
+    filename="${2%/download}"
     filename="${filename##*/}"
     info "Fetching" "$filename"
-    file="$2/$filename"
-    mkdir -p "$2"
+    file="$1/$filename"
+    mkdir -p "$1"
     [[ -f "$file" && ! -s "$file" ]] && rm "$file"
     [[ "$system" = MSYS1 ]] && cert_args="--no-check-certificate"
-    [[ ! -e "$file" ]] && { wget $cert_args --quiet --output-document "$file" "$1" || ${error_handler:-oops} "failed downloading from $1"; }
+    [[ ! -e "$file" ]] && { wget $cert_args --quiet --output-document "$file" "$2" || oops "failed downloading from $2"; }
 }
 
 extract() {
     format="$1"
-    compressed="$2"
-    directory="$3"
+    directory="$2"
+    compressed="$3"
     file="$4"
     level="$5"
     compressed_name="${compressed##*/}"
@@ -190,12 +184,11 @@ extract() {
 
 install() {
     package="$1"
+    error="failed installing $package"
+    info "Checking" "$package"
     case "$system" in
-    MSYS1) info "Checking" "$package"
-           mingw-get install "$package" 2> /dev/null || oops "failed installing $package" ;;
-    MSYS2) package="${package#msys-}"
-           info "Checking" "$package"
-           pacman --noconfirm --sync --needed "$package" > /dev/null 2>&1 || oops "failed installing $package" ;;
+        MSYS1) mingw-get install "$package" 2> /dev/null || oops "$error" ;;
+        MSYS2) pacman --noconfirm --sync --needed "$package" > /dev/null 2>&1 || oops "$error" ;;
     esac
 }
 
@@ -209,50 +202,67 @@ if [[ -n "$path" ]]; then
 fi
 
 # Install what is possible with package manager
-step "Configuring the necessary $system packages"
-for package in $packages; do install "$package"; done
+step "Installing the necessary packages"
 if [[ "$system" = MSYS2 ]]; then
     install "base-devel"
+    install "bsdtar"
+    install "bzip2"
+    install "coreutils"
+    install "libiconv"
+    install "libopenssl"
+    install "unzip"
+    install "zip"
     for architecture in i686 x86_64; do
+        install "mingw-w64-${architecture}-cyrus-sasl"
+        install "mingw-w64-${architecture}-drmingw"
         install "mingw-w64-${architecture}-gcc"
         install "mingw-w64-${architecture}-gtk2"
         install "mingw-w64-${architecture}-gtkspell"
-        install "mingw-w64-${architecture}-cyrus-sasl"
         install "mingw-w64-${architecture}-meanwhile"
+        install "mingw-w64-${architecture}-nspr"
+        install "mingw-w64-${architecture}-nss"
+        install "mingw-w64-${architecture}-perl"
         install "mingw-w64-${architecture}-silc-toolkit"
         install "mingw-w64-${architecture}-sqlite3"
-        install "mingw-w64-${architecture}-drmingw"
-        install "mingw-w64-${architecture}-nss"
-        install "mingw-w64-${architecture}-nspr"
-        install "mingw-w64-${architecture}-perl"
         install "mingw-w64-${architecture}-xmlstarlet"
     done
+else
+    install "mingw32-bzip2"
+    install "mingw32-libiconv"
+    install "msys-bsdtar"
+    install "msys-coreutils"
+    install "msys-libopenssl"
+    install "msys-make"
+    install "msys-patch"
+    install "msys-unzip"
+    install "msys-wget"
+    install "msys-zip"
 fi
 echo
 
 # Download GCC
 if [[ "$system" = MSYS1 ]]; then
     step "Downloading specific MinGW GCC"
-    download "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_pthreads_url/pthreads-w32-2.9.0-mingw32-pre-20110507-2-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_pthreads_url/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dll.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download" "$cache/$mingw"
-    download "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download" "$cache/$mingw"
+    download "$cache/$mingw" "$mingw_base_url/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dll.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_base_url/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_pthreads_url/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download"
+    download "$cache/$mingw" "$mingw_pthreads_url/pthreads-w32-2.9.0-mingw32-pre-20110507-2-dev.tar.lzma/download"
     echo
 fi
 
@@ -288,12 +298,12 @@ if [[ -z "$no_source" ]]; then
         else
             # Source release
             plus_plus_milestone=$(echo "$pidgin_variant_version" | tr [:upper:] [:lower:])
-            download "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin++ $pidgin_variant_version Source.zip" "$cache" oops
+            download "$cache" "https://launchpad.net/pidgin++/trunk/$plus_plus_milestone/+download/Pidgin++ $pidgin_variant_version Source.zip"
             source_directory="$devroot/pidgin++_$pidgin_variant_version"
         fi
     else
         # Pidgin
-        download "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_variant_version.tar.bz2" "$cache" oops
+        download "$cache" "prdownloads.sourceforge.net/pidgin/pidgin-$pidgin_variant_version.tar.bz2"
         source_directory="$devroot/pidgin-$pidgin_variant_version"
     fi
     echo
@@ -302,34 +312,34 @@ fi
 # Download dependencies
 step "Downloading build dependencies"
 if [[ "$system" = MSYS2 ]]; then
-    download "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip" "$cache"
-    download "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip" "$cache"
+    download "$cache" "http://nsis.sourceforge.net/mediawiki/images/c/c9/Inetc.zip"
+    download "$cache" "https://github.com/vslavik/winsparkle/releases/download/v0.4/WinSparkle-0.4.zip"
 else
-    download "$pidgin_base_url/nss-3.17.3-nspr-4.10.7.tar.gz" "$cache"
-    download "$gnome_base_url/win32/dependencies/gettext-tools-0.17.zip" "$cache"
-    download "$gnome_base_url/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip" "$cache"
-    download "$gnome_base_url/win32/dependencies/gettext-runtime-0.17-1.zip" "$cache"
-    download "$gnome_base_url/win32/intltool/0.40/intltool_0.40.4-1_win32.zip" "$cache"
-    download "http://strawberryperl.com/download/$perl_version/$perl.zip" "$cache"
-    download "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip" "$cache"
-    download "$pidgin_base_url/silc-toolkit-1.1.12.tar.gz" "$cache"
-    download "$pidgin_base_url/cyrus-sasl-2.1.26_daa1.tar.gz" "$cache"
-    download "$mingw_gcc44_url/$gcc_core44.tar.gz/download" "$cache"
-    download "$pidgin_base_url/libxml2-2.9.2_daa1.tar.gz" "$cache"
-    download "$pidgin_base_url/enchant_1.6.0_win32.zip" "$cache"
-    download "$pidgin_base_url/perl-$perl_version.tar.gz" "$cache"
-    download "$pidgin_base_url/$gtkspell.tar.bz2" "$cache"
+    download "$cache" "$gnome_base_url/win32/dependencies/gettext-runtime-0.17-1.zip"
+    download "$cache" "$gnome_base_url/win32/dependencies/gettext-tools-0.17.zip"
+    download "$cache" "$gnome_base_url/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"
+    download "$cache" "$gnome_base_url/win32/intltool/0.40/$intltool.zip"
+    download "$cache" "$mingw_gcc44_url/$gcc_core44.tar.gz/download"
+    download "$cache" "$pidgin_base_url/$gtkspell.tar.bz2"
+    download "$cache" "$pidgin_base_url/cyrus-sasl-2.1.26_daa1.tar.gz"
+    download "$cache" "$pidgin_base_url/enchant_1.6.0_win32.zip"
+    download "$cache" "$pidgin_base_url/libxml2-2.9.2_daa1.tar.gz"
+    download "$cache" "$pidgin_base_url/meanwhile-1.0.2_daa3-win32.zip"
+    download "$cache" "$pidgin_base_url/nss-3.17.3-nspr-4.10.7.tar.gz"
+    download "$cache" "$pidgin_base_url/perl-$perl_version.tar.gz"
+    download "$cache" "$pidgin_base_url/silc-toolkit-1.1.12.tar.gz"
+    download "$cache" "http://strawberryperl.com/download/$perl_version/$perl.zip"
 fi
-download "$pidgin_base_url/$pidgin_inst_deps.tar.gz" "$cache"
-download "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip" "$cache"
-download "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download" "$cache"
+download "$cache" "$pidgin_base_url/$pidgin_inst_deps.tar.gz"
+download "$cache" "http://nsis.sourceforge.net/mediawiki/images/1/1c/Nsisunz.zip"
+download "$cache" "http://sourceforge.net/projects/nsis/files/NSIS%202/2.46/$nsis.zip/download"
 echo
 
 # Extract GCC
 if [[ "$system" = MSYS1 ]]; then
     step "Extracting MinGW GCC"
     for tarball in "$cache/$mingw/"*".tar.lzma"; do
-        extract lzma "$tarball" "$win32/$mingw"
+        extract lzma "$win32/$mingw" "$tarball"
     done
     echo
 fi
@@ -338,9 +348,9 @@ fi
 if [[ -z "$no_source" && -z "$development_revision" ]]; then
     step "Extracting $pidgin_variant source code"
     if [[ -n "$pidgin_plus_plus" ]]; then
-        extract zip "$cache/Pidgin++ $pidgin_variant_version Source.zip" "$devroot" && info "Extracted to" "$source_directory"
+        extract zip "$devroot" "$cache/Pidgin++ $pidgin_variant_version Source.zip" && info "Extracted to" "$source_directory"
     else
-        extract bzip2 "$cache/pidgin-$pidgin_variant_version.tar.bz2" "$devroot" && info "Extracted to" "$source_directory"
+        extract bzip2 "$devroot" "$cache/pidgin-$pidgin_variant_version.tar.bz2" && info "Extracted to" "$source_directory"
         echo "MONO_SIGNCODE = echo ***Bypassing signcode***" >  "$source_directory/${pidgin_plus_plus:+source/}local.mak"
         echo "GPG_SIGN = echo ***Bypassing gpg***"           >> "$source_directory/${pidgin_plus_plus:+source/}local.mak"
     fi
@@ -368,36 +378,40 @@ if [[ -n "$link_to_me" ]]; then
     echo
 fi
 
-# Extract common dependencies
+# Extract dependencies
 step "Extracting build dependencies"
-for tarball in "$cache/"*.tar.gz; do
-    [[ "$tarball" = *"$gcc_core44.tar.gz"                            ]] && continue
-    [[ "$tarball" = *"libxml2-2.9.2_daa1.tar.gz"                     ]] && continue
-    [[ "$tarball" = *"$pidgin_inst_deps.tar.gz" && "$system" = MSYS2 ]] && continue
-    extract bsdtar "$tarball" "$win32"
-done
-extract zip "$cache/$nsis.zip" "$win32"
-extract zip "$cache/Nsisunz.zip" "$win32/$nsis/Plugins" nsisunz/Release/nsisunz.dll
-extract gzip "$cache/$pidgin_inst_deps.tar.gz" "$win32/$nsis/Plugins/" $pidgin_inst_deps/SHA1Plugin.dll 1
-
-# Extract specific dependencies
+extract zip "$win32" "$cache/$nsis.zip"
+extract zip "$win32/$nsis/Plugins" "$cache/Nsisunz.zip" nsisunz/Release/nsisunz.dll
 if [[ "$system" = MSYS2 ]]; then
-    extract zip "$cache/Inetc.zip" "$win32/$nsis/Plugins/" "Plugins/inetc.dll"
-    extract zip "$cache/WinSparkle-0.4.zip" "$win32"
-    rm "$win32/WinSparkle-0.4/Release/WinSparkle.lib"
-    rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
+    extract gzip "$win32/$nsis/Plugins"   "$cache/$pidgin_inst_deps.tar.gz" $pidgin_inst_deps/SHA1Plugin.dll 1
+    extract zip  "$win32/$nsis/Plugins"   "$cache/Inetc.zip" "Plugins/inetc.dll"
+    extract zip  "$win32"                 "$cache/WinSparkle-0.4.zip"
+                                          rm "$win32/WinSparkle-0.4/Release/WinSparkle.lib"
+                                          rm "$win32/WinSparkle-0.4/x64/Release/WinSparkle.lib"
 else
-    extract zip "$cache/meanwhile-1.0.2_daa3-win32.zip" "$win32"
-    extract gzip "$cache/libxml2-2.9.2_daa1.tar.gz" "$win32"
-    extract gzip "$cache/$gcc_core44.tar.gz" "$win32/$gcc_core44"
-    extract zip "$cache/gettext-tools-0.17.zip" "$win32/gettext-0.17"
-    extract zip "$cache/gettext-runtime-0.17-1.zip" "$win32/gettext-0.17"
-    extract zip "$cache/intltool_0.40.4-1_win32.zip" "$win32/intltool_0.40.4-1_win32"
-    extract zip "$cache/gtk+-bundle_2.14.7-20090119_win32.zip" "$win32/gtk_2_0-2.14"
-    extract zip "$cache/enchant_1.6.0_win32.zip" "$win32"
-    extract bzip2 "$cache/$gtkspell.tar.bz2" "$win32"
-    extract zip "$cache/$perl.zip" "$win32/$perl_dir"
+    extract gzip   "$win32"               "$cache/$pidgin_inst_deps.tar.gz"
+    extract gzip   "$win32"               "$cache/libxml2-2.9.2_daa1.tar.gz"
+    extract bsdtar "$win32"               "$cache/cyrus-sasl-2.1.26_daa1.tar.gz"
+    extract bsdtar "$win32"               "$cache/nss-3.17.3-nspr-4.10.7.tar.gz"
+    extract bsdtar "$win32"               "$cache/perl-$perl_version.tar.gz"
+    extract bsdtar "$win32"               "$cache/silc-toolkit-1.1.12.tar.gz"
+    extract bzip2  "$win32"               "$cache/$gtkspell.tar.bz2"
+    extract zip    "$win32"               "$cache/meanwhile-1.0.2_daa3-win32.zip"
+    extract zip    "$win32"               "$cache/enchant_1.6.0_win32.zip"
+    extract zip    "$win32/$perl_dir"     "$cache/$perl.zip"
+    extract zip    "$win32/gettext-0.17"  "$cache/gettext-runtime-0.17-1.zip"
+    extract zip    "$win32/gettext-0.17"  "$cache/gettext-tools-0.17.zip"
+    extract zip    "$win32/gtk_2_0-2.14"  "$cache/gtk+-bundle_2.14.7-20090119_win32.zip"
+    extract zip    "$win32/$intltool"     "$cache/$intltool.zip"
+    extract gzip   "$win32/$gcc_core44"   "$cache/$gcc_core44.tar.gz"
 fi
 echo
 
-! available gpg && warn "could not find GnuPG in system path.\n"
+# Check for GnuPG
+step "Checking for GnuPG"
+gpg=$(which gpg 2> /dev/null)
+if [[ -f "$gpg" ]]
+    then info "GnuPG found at" "$gpg"
+    else warn "could not find GnuPG in system path"
+fi
+echo
