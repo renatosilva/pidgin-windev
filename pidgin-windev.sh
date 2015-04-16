@@ -1,37 +1,25 @@
 #!/bin/bash
 
-##
-##    Pidgin Windows Development Setup 2015.4.15
-##    Copyright 2012-2015 Renato Silva
-##    GPLv2 licensed
-##
-## This script sets up a Windows build environment for Pidgin in one single
-## shot, without the long manual steps described in the official wiki. These
-## steps are automatically executed, except for GnuPG installation. After
-## running this tool and finishing the manual steps you can configure system
-## path with --path and then be able to start building.
-##
-## Usage:
-##     @script.name [options] DEVELOPMENT_ROOT
-##
-##     -p, --path          Print system path configuration for evaluation after
-##                         the build environment has been created. This will
-##                         allow you to start compilation.
-##
-##     -w, --which-pidgin  Show the minimum Pidgin version this script creates
-##                         an environment for. Newer versions will also compile
-##                         if not requiring any environment changes.
-##
-##         --version=WHAT  Specify a version other than --which-pidgin.
-##
-##     -n, --no-source     Do not retrieve the source code for Pidgin itself.
-##                         Use this if you already have the source code.
-##
-##     -c, --no-color      Disable colored output.
-##
-
-source easyoptions || exit
+version="2015.4.16"
 pidgin_version="2.10.11.next"
+devroot="$1"
+path="$2"
+
+if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then echo "
+    Pidgin Windows Development Setup ${version}
+    Copyright 2012-2015 Renato Silva
+    GPLv2 licensed
+
+    This MSYS script sets up a Windows build environment for Pidgin ${pidgin_version}
+    in one single shot, without the long manual steps described in the official
+    documentation. These steps are automatically executed, except for GnuPG
+    installation. After running this tool you can configure system path by
+    evaluating the output of --path.
+
+    Usage: $(basename "$0") DEVELOPMENT_ROOT [--path]"
+    echo
+    exit
+fi
 
 # Output formatting
 step() { printf "${green}$1${normal}\n"; }
@@ -55,26 +43,13 @@ if [[ -t 1 && -z "$no_color" ]]; then
     fi
 fi
 
-# Pidgin version
-if [[ -n "$which_pidgin" ]]; then
-    echo "$pidgin_version"
-    exit
-fi
-
 # Under development
-if [[ -z "$no_source" && "$pidgin_version" = *.next ]]; then
+if [[ "$pidgin_version" = *.next ]]; then
     echo "This script is under development for the next version of Pidgin following"
     echo "${pidgin_version%.next} and currently can only create a build environment for some specific"
-    echo "development revision from the source code repository. You need to either"
-    echo "specify --no-source or use a previous version of this script."
+    echo "development revision from the source code repository."
     exit 1
 fi
-
-# Some validation
-devroot="${arguments[0]}"
-[[ -n "$version" && -n "$no_source" ]] && oops "a version can only be specified when downloading the source code"
-[[ -f "$devroot" ]] && oops "the existing development root is not a directory: \"$devroot\""
-[[ -z "$devroot" ]] && oops "a development root must be specified"
 
 # Development root
 if [[ ! -e "$devroot" ]]; then
@@ -82,7 +57,7 @@ if [[ ! -e "$devroot" ]]; then
     info "Location:" "$devroot"
     info; mkdir -p "$devroot"
 fi
-cd "$devroot"
+cd "$devroot" || exit
 devroot=$(readlink -m "$(pwd)")
 [[ $? != 0 ]] && oops "failed to get absolute path for $devroot"
 cd - > /dev/null
@@ -197,12 +172,10 @@ download "${cache}/${mingw}" "${mingw_pthreads_url}/pthreads-w32-2.9.0-mingw32-p
 echo
 
 # Download Pidgin
-if [[ -z "$no_source" ]]; then
-    step "Downloading Pidgin source code"
-    download "$cache" "http://prdownloads.sourceforge.net/pidgin/pidgin-${pidgin_version}.tar.bz2"
-    source_directory="${devroot}/pidgin-${pidgin_version}"
-    echo
-fi
+step "Downloading Pidgin source code"
+download "$cache" "http://prdownloads.sourceforge.net/pidgin/pidgin-${pidgin_version}.tar.bz2"
+source_directory="${devroot}/pidgin-${pidgin_version}"
+echo
 
 # Download dependencies
 step "Downloading build dependencies"
@@ -233,13 +206,11 @@ done
 echo
 
 # Extract Pidgin
-if [[ -z "$no_source" ]]; then
-    step "Extracting Pidgin source code"
-    extract bzip2 "$devroot" "${cache}/pidgin-${pidgin_version}.tar.bz2" && info 'Extracted to' "$source_directory"
-    echo 'MONO_SIGNCODE = echo ***Bypassing signcode***' >  "${source_directory}/local.mak"
-    echo 'GPG_SIGN = echo ***Bypassing gpg***'           >> "${source_directory}/local.mak"
-    echo
-fi
+step "Extracting Pidgin source code"
+extract bzip2 "$devroot" "${cache}/pidgin-${pidgin_version}.tar.bz2" && info 'Extracted to' "$source_directory"
+echo 'MONO_SIGNCODE = echo ***Bypassing signcode***' >  "${source_directory}/local.mak"
+echo 'GPG_SIGN = echo ***Bypassing gpg***'           >> "${source_directory}/local.mak"
+echo
 
 # Extract dependencies
 step "Extracting build dependencies"
