@@ -1,13 +1,13 @@
 #!/bin/bash
 
-version="2015.4.16"
-pidgin_version="2.10.11.next"
+version="2016.1.8"
+pidgin_version="2.10.12"
 devroot="$1"
 path="$2"
 
 if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then echo "
     Pidgin Windows Development Setup ${version}
-    Copyright 2012-2015 Renato Silva
+    Copyright 2012-2016 Renato Silva
     GPLv2 licensed
 
     This MSYS script sets up a Windows build environment for Pidgin ${pidgin_version}
@@ -15,6 +15,11 @@ if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then
     documentation. These steps are automatically executed, except for GnuPG
     installation. After running this tool you can configure system path by
     evaluating the output of --path.
+
+    Note that the Pidgin source tarball is currently broken. The expected GTK+
+    checkshum is outdated, as well as the NSS/NSPR version. Also, MinGW lacks
+    default CA certificates required for wget performing HTTPS downloads during
+    build. For these reasons, source code will be patched.
 
     Usage: $(basename "$0") DEVELOPMENT_ROOT [--path]"
     echo
@@ -69,6 +74,7 @@ nsis="nsis-2.46"
 mingw="mingw-gcc-4.7.2"
 gtkspell="gtkspell-2.0.16"
 gcc_core44="gcc-core-4.4.0-mingw32-dll"
+gcc_source="gcc-4.7.2-1-mingw32-src"
 pidgin_inst_deps="pidgin-inst-deps-20130214"
 intltool="intltool_0.40.4-1_win32"
 perl_version="5.20.1.1"
@@ -102,16 +108,16 @@ extract() {
     format="$1"
     directory="$2"
     compressed="$3"
-    file="$4"
+    files=("${@:4}")
     compressed_name="${compressed##*/}"
-    info "Extracting" "${file:+${file##*/} from }${compressed_name}"
+    info "Extracting" "${files[0]:+${files[0]##*/}${files[1]:+ and other files} from }${compressed_name}"
     mkdir -p "$directory"
     case "$format" in
         bsdtar)  bsdtar -xzf          "$compressed"  --directory "$directory" ;;
         lzma)    tar --lzma -xf       "$compressed"  --directory "$directory" ;;
-        bzip2)   tar -xjf             "$compressed"  --directory "$directory" ;;
+        bzip2)   tar -xjf             "$compressed"  --directory "$directory" "${files[@]}" ;;
         gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
-        zip)     unzip -qo${file:+j}  "$compressed"     $file -d "$directory" ;;
+        zip)     unzip -qo${files:+j} "$compressed" "${files[@]}" -d "$directory" ;;
     esac || exit
 }
 
@@ -151,6 +157,7 @@ echo
 step "Downloading specific MinGW GCC"
 download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/${gcc_source}.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"
@@ -189,7 +196,7 @@ download "${cache}" "${pidgin_base_url}/cyrus-sasl-2.1.26_daa1.tar.gz"
 download "${cache}" "${pidgin_base_url}/enchant_1.6.0_win32.zip"
 download "${cache}" "${pidgin_base_url}/libxml2-2.9.2_daa1.tar.gz"
 download "${cache}" "${pidgin_base_url}/meanwhile-1.0.2_daa3-win32.zip"
-download "${cache}" "${pidgin_base_url}/nss-3.17.3-nspr-4.10.7.tar.gz"
+download "${cache}" "${pidgin_base_url}/nss-3.20.1-nspr-4.10.10.tar.gz"
 download "${cache}" "${pidgin_base_url}/perl-${perl_version}.tar.gz"
 download "${cache}" "${pidgin_base_url}/silc-toolkit-1.1.12.tar.gz"
 download "${cache}" "${pidgin_base_url}/${pidgin_inst_deps}.tar.gz"
@@ -210,6 +217,16 @@ step "Extracting Pidgin source code"
 extract bzip2 "$devroot" "${cache}/pidgin-${pidgin_version}.tar.bz2" && info 'Extracted to' "$source_directory"
 echo 'MONO_SIGNCODE = echo ***Bypassing signcode***' >  "${source_directory}/local.mak"
 echo 'GPG_SIGN = echo ***Bypassing gpg***'           >> "${source_directory}/local.mak"
+patch -p2 --directory "${source_directory}" < "$(dirname "$0")/pidgin-${pidgin_version}.patch"
+echo
+
+# LibSSP sources
+step "Creating LibSSP source tarball"
+cd "${win32}/${mingw}"
+extract bzip2 "${gcc_source}/libssp-src" "${gcc_source}/gcc-4.7.2.tar.bz2" gcc-4.7.2/{libssp,COPYING3,COPYING.RUNTIME}
+tar --directory "${gcc_source}/libssp-src/gcc-4.7.2" -czf bin/libssp-src.tar.gz .
+rm -r "${gcc_source}"
+cd - > /dev/null
 echo
 
 # Extract dependencies
@@ -217,7 +234,7 @@ step "Extracting build dependencies"
 extract gzip   "${win32}"                 "${cache}/${pidgin_inst_deps}.tar.gz"
 extract gzip   "${win32}"                 "${cache}/libxml2-2.9.2_daa1.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/cyrus-sasl-2.1.26_daa1.tar.gz"
-extract bsdtar "${win32}"                 "${cache}/nss-3.17.3-nspr-4.10.7.tar.gz"
+extract bsdtar "${win32}"                 "${cache}/nss-3.20.1-nspr-4.10.10.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/perl-${perl_version}.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/silc-toolkit-1.1.12.tar.gz"
 extract bzip2  "${win32}"                 "${cache}/${gtkspell}.tar.bz2"
