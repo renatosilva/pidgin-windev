@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="2015.4.16"
+version="2016.1.8"
 pidgin_version="2.10.11.next"
 devroot="$1"
 path="$2"
@@ -231,6 +231,7 @@ extract zip    "${win32}/gettext-0.17"    "${cache}/gettext-tools-0.17.zip"
 extract zip    "${win32}/gtk_2_0-2.14"    "${cache}/gtk+-bundle_2.14.7-20090119_win32.zip"
 extract zip    "${win32}/${intltool}"     "${cache}/${intltool}.zip"
 extract gzip   "${win32}/${gcc_core44}"   "${cache}/${gcc_core44}.tar.gz"
+info "Installing" "SHA1 plugin for NSIS"; cp "${win32}/${pidgin_inst_deps}/SHA1Plugin.dll" "${win32}/${nsis}/Plugins"
 echo
 
 # Check for GnuPG
