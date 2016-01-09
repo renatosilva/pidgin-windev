@@ -8,7 +8,7 @@ path="$2"
 if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then echo "
     Pidgin Windows Development Setup ${version}
     Copyright 2012-2016 Renato Silva
-    GPLv2 licensed
+    Licensed under BSD
 
     This Cygwin/MSYS script sets up a Windows build environment for Pidgin ${pidgin_version}
     in one single shot, without the long manual steps described in the official
