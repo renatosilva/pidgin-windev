@@ -1,0 +1,30 @@
+diff -ur 000/pidgin-2.10.12/pidgin/win32/nsis/generate_gtk_zip.sh 001/pidgin-2.10.12/pidgin/win32/nsis/generate_gtk_zip.sh
+--- 000/pidgin-2.10.12/pidgin/win32/nsis/generate_gtk_zip.sh	2015-12-31 21:19:42.000000000 -0200
++++ 001/pidgin-2.10.12/pidgin/win32/nsis/generate_gtk_zip.sh	2016-01-08 08:12:50.641396600 -0200
+@@ -25,7 +25,7 @@
+ #Download the existing file (so that we distribute the exact same file for all releases with the same bundle version)
+ FILE="$ZIP_FILE"
+ if [ ! -e "$FILE" ]; then
+-	wget "https://pidgin.im/win32/download_redir.php?version=$PIDGIN_VERSION&gtk_version=$BUNDLE_VERSION&dl_pkg=gtk" -O "$FILE"
++	wget --no-check-certificate "https://pidgin.im/win32/download_redir.php?version=$PIDGIN_VERSION&gtk_version=$BUNDLE_VERSION&dl_pkg=gtk" -O "$FILE"
+ fi
+ CHECK_SHA1SUM=`sha1sum $FILE`
+ CHECK_SHA1SUM=${CHECK_SHA1SUM%%\ *}
+@@ -90,7 +90,7 @@
+ 	elif [ $VALIDATION_TYPE == 'gpg' ]; then
+ 		if [ ! -e "$FILE.asc" ]; then
+ 			echo Downloading GPG key for $NAME
+-			wget "$URL.asc" || exit 1
++			wget --no-check-certificate "$URL.asc" || exit 1
+ 		fi
+ 		#Use our own keyring to avoid adding stuff to the main keyring
+ 		#This doesn't use $GPG_SIGN because we don't this validation to be bypassed when people are skipping signing output
+@@ -134,7 +134,7 @@
+ 		FILE=${PREFIX}$(basename $URL)
+ 		if [ ! -e "$FILE" ]; then
+ 			echo Downloading $FILE for $NAME ...
+-			wget -P "$PREFIX" $URL || exit 1
++			wget --no-check-certificate -P "$PREFIX" $URL || exit 1
+ 		fi
+ 		validate_file "$VALIDATION" "$FILE"
+ 		EXTENSION=${FILE##*.}

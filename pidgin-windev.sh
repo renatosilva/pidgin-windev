@@ -1,20 +1,21 @@
 #!/bin/bash
 
-version="2016.1.8"
+version="2016.6.26"
 pidgin_version="2.10.12"
 devroot="$1"
 path="$2"
 
 if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then echo "
     Pidgin Windows Development Setup ${version}
+    Target Pidgin version ${pidgin_version}
     Copyright 2012-2016 Renato Silva
-    GPLv2 licensed
+    Licensed under BSD
 
-    This MSYS script sets up a Windows build environment for Pidgin ${pidgin_version}
-    in one single shot, without the long manual steps described in the official
+    This Cygwin/MSYS script sets up a Windows build environment for Pidgin in
+    one single shot, without the long manual steps described in the official
     documentation. These steps are automatically executed, except for GnuPG
-    installation. After running this tool you can configure system path by
-    evaluating the output of --path.
+    installation in MSYS. After running this tool you can configure system path
+    by evaluating the output of --path.
 
     Note that the Pidgin source tarball is currently broken. The expected GTK+
     checkshum is outdated, as well as the NSS/NSPR version. Also, MinGW lacks
@@ -68,6 +69,7 @@ devroot=$(readlink -m "$(pwd)")
 cd - > /dev/null
 
 # Configuration
+system=$(uname -o)
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 nsis="nsis-2.46"
@@ -89,9 +91,8 @@ mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507
 # Functions
 
 available() {
-    which "$1" >/dev/null 2>&1 && return 0
-    warn "could not find ${1} in system path"
-    return 1
+    which "$1" >/dev/null 2>&1
+    return $?
 }
 
 download() {
@@ -121,10 +122,13 @@ extract() {
     esac || exit
 }
 
-mingw_get() {
+install() {
     package="$1"
     info 'Checking' "$package"
-    mingw-get install "$package" --verbose=0 >/dev/null 2>&1 || oops "failed installing ${package}"
+    case "${system}" in
+        Cygwin) apt-cyg install "$package"             >/dev/null 2>&1 || oops "failed installing ${package}" ;;
+        Msys) mingw-get install "$package" --verbose=0 >/dev/null 2>&1 || oops "failed installing ${package}" ;;
+    esac
 }
 
 # Path configuration
@@ -139,17 +143,36 @@ fi
 
 # Install what is possible with package manager
 step "Installing the necessary packages"
-if available mingw-get; then
-    mingw_get 'mingw32-bzip2'
-    mingw_get 'mingw32-libiconv'
-    mingw_get 'msys-bsdtar'
-    mingw_get 'msys-coreutils'
-    mingw_get 'msys-libopenssl'
-    mingw_get 'msys-make'
-    mingw_get 'msys-patch'
-    mingw_get 'msys-unzip'
-    mingw_get 'msys-wget'
-    mingw_get 'msys-zip'
+if [[ "${system}" = Cygwin ]]; then
+    if ! available apt-cyg; then
+        info 'Installing' 'apt-cyg'
+        lynx -source 'https://github.com/transcode-open/apt-cyg/raw/master/apt-cyg' > /usr/local/bin/apt-cyg
+        chmod +x /usr/local/bin/apt-cyg
+    fi
+    install 'bsdtar'
+    install 'ca-certificates'
+    install 'gnupg'
+    install 'libiconv'
+    install 'make'
+    install 'patch'
+    install 'unzip'
+    install 'wget'
+    install 'zip'
+else
+    if available mingw-get; then
+        install 'mingw32-bzip2'
+        install 'mingw32-libiconv'
+        install 'msys-bsdtar'
+        install 'msys-coreutils'
+        install 'msys-libopenssl'
+        install 'msys-make'
+        install 'msys-patch'
+        install 'msys-unzip'
+        install 'msys-wget'
+        install 'msys-zip'
+    else
+        warn 'could not find mingw-get in system path'
+    fi
 fi
 echo
 
@@ -218,6 +241,7 @@ extract bzip2 "$devroot" "${cache}/pidgin-${pidgin_version}.tar.bz2" && info 'Ex
 echo 'MONO_SIGNCODE = echo ***Bypassing signcode***' >  "${source_directory}/local.mak"
 echo 'GPG_SIGN = echo ***Bypassing gpg***'           >> "${source_directory}/local.mak"
 patch -p2 --directory "${source_directory}" < "$(dirname "$0")/pidgin-${pidgin_version}.patch"
+[[ "${system}" = Msys ]] && patch -p2 --directory "${source_directory}" < "$(dirname "$0")/pidgin-wget-msys.patch"
 echo
 
 # LibSSP sources
@@ -248,9 +272,19 @@ extract zip    "${win32}/gettext-0.17"    "${cache}/gettext-tools-0.17.zip"
 extract zip    "${win32}/gtk_2_0-2.14"    "${cache}/gtk+-bundle_2.14.7-20090119_win32.zip"
 extract zip    "${win32}/${intltool}"     "${cache}/${intltool}.zip"
 extract gzip   "${win32}/${gcc_core44}"   "${cache}/${gcc_core44}.tar.gz"
+info "Installing" "SHA1 plugin for NSIS"; cp "${win32}/${pidgin_inst_deps}/SHA1Plugin.dll" "${win32}/${nsis}/Plugins"
 echo
 
-# Check for GnuPG
-step "Checking for GnuPG"
-available gpg && info 'GnuPG found at' $(which gpg)
+# Finishing
+if [[ "${system}" = Cygwin ]]; then
+    step "Setting executable permissions"
+    info "Setting permission" "for exe files"; find "${win32}" -type f -name '*.exe' | xargs chmod +x
+    info "Setting permission" "for dll files"; find "${win32}" -type f -name '*.dll' | xargs chmod +x
+else
+    step "Checking for GnuPG"
+    if available gpg
+        then info 'GnuPG found at' "$(which gpg)"
+        else warn 'could not find gpg in system path'
+    fi
+fi
 echo
