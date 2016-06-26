@@ -1,17 +1,18 @@
 #!/bin/bash
 
-version="2016.1.9"
+version="2016.6.26"
 pidgin_version="2.10.12"
 devroot="$1"
 path="$2"
 
 if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then echo "
     Pidgin Windows Development Setup ${version}
+    Target Pidgin version ${pidgin_version}
     Copyright 2012-2016 Renato Silva
     Licensed under BSD
 
-    This Cygwin/MSYS script sets up a Windows build environment for Pidgin ${pidgin_version}
-    in one single shot, without the long manual steps described in the official
+    This Cygwin/MSYS script sets up a Windows build environment for Pidgin in
+    one single shot, without the long manual steps described in the official
     documentation. These steps are automatically executed, except for GnuPG
     installation in MSYS. After running this tool you can configure system path
     by evaluating the output of --path.
@@ -282,7 +283,7 @@ if [[ "${system}" = Cygwin ]]; then
 else
     step "Checking for GnuPG"
     if available gpg
-        then info 'GnuPG found at' $(which gpg)
+        then info 'GnuPG found at' "$(which gpg)"
         else warn 'could not find gpg in system path'
     fi
 fi
