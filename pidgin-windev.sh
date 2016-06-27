@@ -1,7 +1,7 @@
 #!/bin/bash
 
-version="2016.6.26"
-pidgin_version="2.10.12"
+version="2016.6.27"
+pidgin_version="2.11.0"
 devroot="$1"
 path="$2"
 
@@ -17,10 +17,8 @@ if [[ "$1" = -* || -z "$devroot" || ( -n "$path" && "$path" != --path ) ]]; then
     installation in MSYS. After running this tool you can configure system path
     by evaluating the output of --path.
 
-    Note that the Pidgin source tarball is currently broken. The expected GTK+
-    checkshum is outdated, as well as the NSS/NSPR version. Also, MinGW lacks
-    default CA certificates required for wget performing HTTPS downloads during
-    build. For these reasons, source code will be patched.
+    Note that MinGW lacks default CA certificates required for wget performing
+    HTTPS downloads during build. For this reason, source code will be patched.
 
     Usage: $(basename "$0") DEVELOPMENT_ROOT [--path]"
     echo
@@ -219,7 +217,7 @@ download "${cache}" "${pidgin_base_url}/cyrus-sasl-2.1.26_daa1.tar.gz"
 download "${cache}" "${pidgin_base_url}/enchant_1.6.0_win32.zip"
 download "${cache}" "${pidgin_base_url}/libxml2-2.9.2_daa1.tar.gz"
 download "${cache}" "${pidgin_base_url}/meanwhile-1.0.2_daa3-win32.zip"
-download "${cache}" "${pidgin_base_url}/nss-3.20.1-nspr-4.10.10.tar.gz"
+download "${cache}" "${pidgin_base_url}/nss-3.24-nspr-4.12.tar.gz"
 download "${cache}" "${pidgin_base_url}/perl-${perl_version}.tar.gz"
 download "${cache}" "${pidgin_base_url}/silc-toolkit-1.1.12.tar.gz"
 download "${cache}" "${pidgin_base_url}/${pidgin_inst_deps}.tar.gz"
@@ -240,7 +238,6 @@ step "Extracting Pidgin source code"
 extract bzip2 "$devroot" "${cache}/pidgin-${pidgin_version}.tar.bz2" && info 'Extracted to' "$source_directory"
 echo 'MONO_SIGNCODE = echo ***Bypassing signcode***' >  "${source_directory}/local.mak"
 echo 'GPG_SIGN = echo ***Bypassing gpg***'           >> "${source_directory}/local.mak"
-patch -p2 --directory "${source_directory}" < "$(dirname "$0")/pidgin-${pidgin_version}.patch"
 [[ "${system}" = Msys ]] && patch -p2 --directory "${source_directory}" < "$(dirname "$0")/pidgin-wget-msys.patch"
 echo
 
@@ -258,7 +255,7 @@ step "Extracting build dependencies"
 extract gzip   "${win32}"                 "${cache}/${pidgin_inst_deps}.tar.gz"
 extract gzip   "${win32}"                 "${cache}/libxml2-2.9.2_daa1.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/cyrus-sasl-2.1.26_daa1.tar.gz"
-extract bsdtar "${win32}"                 "${cache}/nss-3.20.1-nspr-4.10.10.tar.gz"
+extract bsdtar "${win32}"                 "${cache}/nss-3.24-nspr-4.12.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/perl-${perl_version}.tar.gz"
 extract bsdtar "${win32}"                 "${cache}/silc-toolkit-1.1.12.tar.gz"
 extract bzip2  "${win32}"                 "${cache}/${gtkspell}.tar.bz2"
