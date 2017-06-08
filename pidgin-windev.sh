@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version="2017.06.08"
-pidgin_version="2.11.0"
+pidgin_version="2.12.0"
 devroot="$1"
 path="$2"
 
@@ -76,7 +76,6 @@ win32="$devroot/win32-dev"
 nsis="nsis-2.46"
 mingw="mingw-gcc-4.7.2"
 gtkspell="gtkspell-2.0.16"
-gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gcc_source="gcc-4.7.2-1-mingw32-src"
 pidgin_inst_deps="pidgin-inst-deps-20130214"
 intltool="intltool_0.40.4-1_win32"
@@ -86,8 +85,13 @@ perl_dir="strawberry-perl-${perl_version%.*}"
 pidgin_base_url="https://developer.pidgin.im/static/win32"
 gnome_base_url="https://ftp.gnome.org/pub/gnome/binaries"
 mingw_base_url="https://sourceforge.net/projects/mingw/files/MinGW/Base"
-mingw_gcc44_url="$mingw_base_url/gcc/Version4/Previous%20Release%20gcc-4.4.0"
 mingw_pthreads_url="$mingw_base_url/pthreads-w32/pthreads-w32-2.9.0-pre-20110507-2"
+#gettext_rt_zip="gettext-runtime_0.18.1.1-2_win32.zip"
+gettext_rt_zip=gettext-runtime-0.17-1.zip
+#gettext_tools_zip="gettext-tools_0.18.1.1-2_win32.zip"
+gettext_tools_zip=gettext-tools-0.17.zip
+gtk_zip="gtk+-bundle_2.16.6-20100912_win32.zip"
+#gtk_zip="gtk+-bundle_2.14.7-20090119_win32.zip"
 
 # Functions
 
@@ -179,7 +183,7 @@ echo
 
 # Download GCC
 step "Downloading specific MinGW GCC"
-download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.28/binutils-2.28-1-mingw32-bin.tar.xz/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/${gcc_source}.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
@@ -210,11 +214,10 @@ echo
 
 # Download dependencies
 step "Downloading build dependencies"
-download "${cache}" "${gnome_base_url}/win32/dependencies/gettext-runtime-0.17-1.zip"
-download "${cache}" "${gnome_base_url}/win32/dependencies/gettext-tools-0.17.zip"
-download "${cache}" "${gnome_base_url}/win32/gtk+/2.14/gtk+-bundle_2.14.7-20090119_win32.zip"
+download "${cache}" "${gnome_base_url}/win32/dependencies/${gettext_rt_zip}"
+download "${cache}" "${gnome_base_url}/win32/dependencies/${gettext_tools_zip}"
+download "${cache}" "${gnome_base_url}/win32/gtk+/2.16/${gtk_zip}"
 download "${cache}" "${gnome_base_url}/win32/intltool/0.40/${intltool}.zip"
-download "${cache}" "${mingw_gcc44_url}/${gcc_core44}.tar.gz/download"
 download "${cache}" "${pidgin_base_url}/${gtkspell}.tar.bz2"
 download "${cache}" "${pidgin_base_url}/cyrus-sasl-2.1.26_daa1.tar.gz"
 download "${cache}" "${pidgin_base_url}/enchant_1.6.0_win32.zip"
@@ -233,6 +236,9 @@ echo
 step "Extracting MinGW GCC"
 for tarball in "${cache}/${mingw}/"*".tar.lzma"; do
     extract lzma "${win32}/${mingw}" "$tarball"
+done
+for tarball in "${cache}/${mingw}/"*".tar.xz"; do
+    extract xz "${win32}/${mingw}" "$tarball"
 done
 echo
 
@@ -267,11 +273,10 @@ extract zip    "${win32}"                 "${cache}/enchant_1.6.0_win32.zip"
 extract zip    "${win32}"                 "${cache}/${nsis}.zip"
 extract zip    "${win32}/${nsis}/Plugins" "${cache}/Nsisunz.zip" nsisunz/Release/nsisunz.dll
 extract zip    "${win32}/${perl_dir}"     "${cache}/${perl}.zip"
-extract zip    "${win32}/gettext-0.17"    "${cache}/gettext-runtime-0.17-1.zip"
-extract zip    "${win32}/gettext-0.17"    "${cache}/gettext-tools-0.17.zip"
-extract zip    "${win32}/gtk_2_0-2.14"    "${cache}/gtk+-bundle_2.14.7-20090119_win32.zip"
+extract zip    "${win32}/gettext-0.17"    "${cache}/${gettext_rt_zip}"
+extract zip    "${win32}/gettext-0.17"    "${cache}/${gettext_tools_zip}"
+extract zip    "${win32}/gtk_2_0-2.14"    "${cache}/${gtk_zip}"
 extract zip    "${win32}/${intltool}"     "${cache}/${intltool}.zip"
-extract gzip   "${win32}/${gcc_core44}"   "${cache}/${gcc_core44}.tar.gz"
 info "Installing" "SHA1 plugin for NSIS"; cp "${win32}/${pidgin_inst_deps}/SHA1Plugin.dll" "${win32}/${nsis}/Plugins"
 echo
 
