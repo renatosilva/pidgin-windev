@@ -7,4 +7,5 @@ This Cygwin/MSYS tool creates a build environment for Pidgin on Windows, automat
 ## License and copyright
 
 Copyright (c) 2012-2016 Renato Silva.
+Copyright (c) 2021 Jeremiah Blanchard.
 Licensed under the terms of the [3-clause BSD license](LICENSE).
