@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version="2016.6.27"
-pidgin_version="2.11.0"
+pidgin_version="2.14.12"
 devroot="$1"
 path="$2"
 
@@ -113,9 +113,9 @@ extract() {
     mkdir -p "$directory"
     case "$format" in
         bsdtar)  bsdtar -xzf          "$compressed"  --directory "$directory" ;;
-        lzma)    tar --lzma -xf       "$compressed"  --directory "$directory" ;;
-        bzip2)   tar -xjf             "$compressed"  --directory "$directory" "${files[@]}" ;;
-        gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
+        lzma)    /usr/bin/tar -x --lzma -f       "$compressed"  --directory "$directory" ;;
+        bzip2)   /usr/bin/tar -xjf             "$compressed"  --directory "$directory" "${files[@]}" ;;
+        gzip)    /usr/bin/tar -xzf             "$compressed"  --directory "$directory" ;;
         zip)     unzip -qo${files:+j} "$compressed" "${files[@]}" -d "$directory" ;;
     esac || exit
 }
@@ -176,7 +176,7 @@ echo
 
 # Download GCC
 step "Downloading specific MinGW GCC"
-download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.24/binutils-2.24-1-mingw32-bin.tar.xz/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/${gcc_source}.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
