@@ -1,0 +1,12 @@
+* text=auto
+
+*.md text
+/LICENSE text
+
+*.sh text eol=lf
+
+*.diff text
+*.patch text
+*.orig text
+
+*.png binary

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version="2016.6.27"
-pidgin_version="2.11.0"
+pidgin_version="2.14.12"
 devroot="$1"
 path="$2"
 
@@ -71,7 +71,7 @@ system=$(uname -o)
 cache="$devroot/downloads"
 win32="$devroot/win32-dev"
 nsis="nsis-2.46"
-mingw="mingw-gcc-4.7.2"
+mingw="mingw-4.7.2"
 gtkspell="gtkspell-2.0.16"
 gcc_core44="gcc-core-4.4.0-mingw32-dll"
 gcc_source="gcc-4.7.2-1-mingw32-src"
@@ -111,31 +111,34 @@ extract() {
     compressed_name="${compressed##*/}"
     info "Extracting" "${files[0]:+${files[0]##*/}${files[1]:+ and other files} from }${compressed_name}"
     mkdir -p "$directory"
+    set -x
     case "$format" in
         bsdtar)  bsdtar -xzf          "$compressed"  --directory "$directory" ;;
-        lzma)    tar --lzma -xf       "$compressed"  --directory "$directory" ;;
-        bzip2)   tar -xjf             "$compressed"  --directory "$directory" "${files[@]}" ;;
-        gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
         zip)     unzip -qo${files:+j} "$compressed" "${files[@]}" -d "$directory" ;;
+        *)       tar -xvf             "$compressed"  --directory "$directory" ;;
+        #lzma)    tar -xvf --lzma      "$compressed"  --directory "$directory" ;;
+        #bzip2)   tar -xjf             "$compressed"  --directory "$directory" "${files[@]}" ;;
+        #gzip)    tar -xzf             "$compressed"  --directory "$directory" ;;
     esac || exit
+    set +x
 }
 
 install() {
     package="$1"
     info 'Checking' "$package"
     case "${system}" in
-        Cygwin) apt-cyg install "$package"             >/dev/null 2>&1 || oops "failed installing ${package}" ;;
-        Msys) mingw-get install "$package" --verbose=0 >/dev/null 2>&1 || oops "failed installing ${package}" ;;
+        Cygwin*) apt-cyg install "$package"             >/dev/null 2>&1 || oops "failed installing ${package}" ;;
+        Msys*) mingw-get install "$package" --verbose=0 >/dev/null 2>&1 || oops "failed installing ${package}" ;;
     esac
 }
 
 # Path configuration
 if [[ -n "$path" ]]; then
-    printf "export PATH='"
-    printf "${win32}/${mingw}/bin:"
-    printf "${win32}/${perl_dir}/perl/bin:"
-    printf "${win32}/${nsis}:"
-    printf "${PATH}'"
+    printf "%s" "export PATH='"
+    printf "%s" "${win32}/${mingw}/bin:"
+    printf "%s" "${win32}/${perl_dir}/perl/bin:"
+    printf "%s" "${win32}/${nsis}:"
+    printf "%s\\n" "${PATH}'"
     exit
 fi
 
@@ -176,27 +179,27 @@ echo
 
 # Download GCC
 step "Downloading specific MinGW GCC"
-download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.23.1/binutils-2.23.1-1-mingw32-bin.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/${gcc_source}.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/binutils/binutils-2.24/binutils-2.24-1-mingw32-bin.tar.xz/download"
 download "${cache}/${mingw}" "${mingw_base_url}/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dev.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/mingwrt/mingwrt-3.20/mingwrt-3.20-2-mingw32-dll.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_base_url}/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_base_url}/w32api/w32api-3.17/w32api-3.17-2-mingw32-dev.tar.lzma/download"
-download "${cache}/${mingw}" "${mingw_pthreads_url}/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/mpc/mpc-0.8.1-1/mpc-0.8.1-1-mingw32-dev.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/mpc/mpc-0.8.1-1/libmpc-0.8.1-1-mingw32-dll-2.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/mpfr/mpfr-2.4.1-1/mpfr-2.4.1-1-mingw32-dev.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/mpfr/mpfr-2.4.1-1/libmpfr-2.4.1-1-mingw32-dll-1.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gmp/gmp-5.0.1-1/gmp-5.0.1-1-mingw32-dev.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gmp/gmp-5.0.1-1/libgmp-5.0.1-1-mingw32-dll-10.tar.lzma/download"
 download "${cache}/${mingw}" "${mingw_pthreads_url}/pthreads-w32-2.9.0-mingw32-pre-20110507-2-dev.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_pthreads_url}/libpthreadgc-2.9.0-mingw32-pre-20110507-2-dll-2.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dev.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/libiconv/libiconv-1.14-2/libiconv-1.14-2-mingw32-dll-2.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gettext/gettext-0.18.1.1-2/libintl-0.18.1.1-2-mingw32-dll-8.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgomp-4.7.2-1-mingw32-dll-1.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libssp-4.7.2-1-mingw32-dll-0.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libquadmath-4.7.2-1-mingw32-dll-0.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/libgcc-4.7.2-1-mingw32-dll-1.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/gcc-core-4.7.2-1-mingw32-bin.tar.lzma/download"
+download "${cache}/${mingw}" "${mingw_base_url}/gcc/Version4/gcc-4.7.2-1/${gcc_source}.tar.lzma/download"
 echo
 
 # Download Pidgin
@@ -228,9 +231,13 @@ echo
 
 # Extract GCC
 step "Extracting MinGW GCC"
+for tarball in "${cache}/${mingw}/"*".tar.xz"; do
+    extract xz "${win32}/${mingw}" "$tarball"
+done
 for tarball in "${cache}/${mingw}/"*".tar.lzma"; do
     extract lzma "${win32}/${mingw}" "$tarball"
 done
+
 echo
 
 # Extract Pidgin
